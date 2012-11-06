@@ -1,0 +1,21 @@
+all : win32
+
+win32 : test0.exe
+
+test0.exe : test0.m aspartame.dll
+	gcc test0.m -o test0.exe -mwindows -I./../atropine aspartame.dll ./../atropine/atropine.dll `objfw-config --all`
+
+aspartame.dll : objects platform/win32/platform.o
+	gcc -shared *.o platform/win32/platform.o -o aspartame.dll ./../atropine/atropine.dll -mwindows `objfw-config --libs`
+
+all : objects
+
+objects : ILApplication.o ILWindow.o ILControl.o
+
+%.o : %.m
+	gcc -c -o $@ $^ -I./../atropine `objfw-config --cppflags --objcflags`
+
+clean :
+	rm -f *.o
+	rm -f *.exe
+	rm -f *.dll

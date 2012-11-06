@@ -1,0 +1,13 @@
+.DS_Store
+*.exe
+*.dll
+*.bin
+*.o
+*.a
+*.la
+*.dylib
+*.so
+*.so.*
+*.png
+*.app
+*.app/*
