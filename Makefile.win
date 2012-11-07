@@ -10,7 +10,7 @@ aspartame.dll : objects platform/win/platform.o
 
 all : objects
 
-objects : OMApplication.o OMWindow.o OMControl.o
+objects : OMApplication.o OMWindow.o OMMenu.o OMControl.o
 
 %.o : %.m
 	clang -c -o $@ $^ -I./../atropine `objfw-config --cppflags --objcflags`

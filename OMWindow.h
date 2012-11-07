@@ -25,22 +25,21 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 //Internal Properties
 {
   @protected
-    void     *platformData;
-    id        controller;
-    SEL       selClosing;
-    SEL       selMaximized;
-    SEL       selMinimized;
-    SEL       selMoved;
-    SEL       selResized;
-    BOOL      quitOnClose;
-    BOOL      visible;
-    OFString *title;
-    id        child;
-    id        focus;
+    void     *_platformData;
+    id        _controller;
+    SEL       _selClosing;
+    SEL       _selMaximized;
+    SEL       _selMinimized;
+    SEL       _selMoved;
+    SEL       _selResized;
+    BOOL      _quitOnClose;
+    BOOL      _visible;
+    OFString *_title;
+    id        _child;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-//Forward-to-Controller Events
-@property (assign) id  controller;
+//Forward-to-Controller Event Properties
+@property (retain) id  controller;
 @property (assign) SEL selClosing;    //return NO to cancel
 @property (assign) SEL selMaximized;
 @property (assign) SEL selMinimized;
@@ -48,6 +47,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 @property (assign) SEL selResized;
 //----------------------------------------------------------------------------------------------------------------------------------
 //'Real' Properties
+@property (nonatomic, retain) id            child;
 @property (nonatomic, copy  ) OFString     *title;
 @property (nonatomic, assign) OMCoordinate  location;
 @property (nonatomic, assign) OMSize        size;
@@ -56,8 +56,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 @property (nonatomic, assign) BOOL          visible;
 @property (nonatomic, assign) BOOL          maximized;
 @property (nonatomic, assign) BOOL          minimized;
-@property (nonatomic, assign) id            child;
-@property (nonatomic, assign) id            focus;
+//@property (nonatomic, retain) menu
 //----------------------------------------------------------------------------------------------------------------------------------
 //Constructors
 + window;

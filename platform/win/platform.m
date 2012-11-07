@@ -77,23 +77,6 @@ void platform_Application_Init()
   RegisterClassEx(&wcx);
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-OFList *platform_Application_Arguments()
-{
-  //we're using UTF8 (originally just because of GCC & Pango support; but UTF8 is actually very nice), so we've some processing to do...
-  int i, argc; wchar_t **argv; char *buff;
-  argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-  OFString *ofs;
-  OFList *args = [OFList list];
-  for(i=0; i<argc; i++)
-  {
-    //convert to UTF8
-    buff = UTF16_8(argv[i]);
-    [args appendObject : [OFString stringWithUTF8String : buff]];
-    free(buff);
-  }
-  return args;
-}
-//----------------------------------------------------------------------------------------------------------------------------------
 void platform_Application_Loop()
 {
   MSG msg; int msgCode;

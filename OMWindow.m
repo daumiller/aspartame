@@ -25,112 +25,74 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 @implementation OMWindow
 //==================================================================================================================================
 //Forward-to-Controller Events
-@synthesize controller;
-@synthesize selClosing;
-@synthesize selMaximized;
-@synthesize selMinimized;
-@synthesize selMoved;
-@synthesize selResized;
+@synthesize controller    = _controller;
+@synthesize selClosing    = _selClosing;
+@synthesize selMaximized  = _selMaximized;
+@synthesize selMinimized  = _selMinimized;
+@synthesize selMoved      = _selMoved;
+@synthesize selResized    = _selResized;
 //==================================================================================================================================
-//'Real' Properties
-@synthesize title;
+//Properties: ivar
+@synthesize quitOnClose = _quitOnClose;
+//==================================================================================================================================
+//Properties: mixed
+@synthesize title = _title;
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-- (void) setTitle:(OFString *)inTitle
+- (void) setTitle:(OFString *)title
 {
-  if(title != nil) [title release];
-  title = [[OFString alloc] initWithString:inTitle];
-  platform_Window_SetTitle(platformData, title);
+  if(_title != nil) [title release];
+  _title = [[OFString alloc] initWithString:title];
+  platform_Window_SetTitle(_platformData, _title);
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-- (void) setLocation:(OMCoordinate)inLocation
-{
-  platform_Window_SetLocation(platformData, inLocation);
-}
+@synthesize child = _child;
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-- (OMCoordinate)location
+- (void) setChild:(id)child
 {
-  return platform_Window_GetLocation(platformData);
-}
-//----------------------------------------------------------------------------------------------------------------------------------
-- (void) setSize:(OMSize)inSize
-{
-  platform_Window_SetSize(platformData, inSize);
-}
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-- (OMSize)size
-{
-  return platform_Window_GetSize(platformData);
-}
-//----------------------------------------------------------------------------------------------------------------------------------
-- (void) setDimension:(OMDimension)inDimension
-{
-  platform_Window_SetLocation(platformData, inDimension.origin);
-  platform_Window_SetSize    (platformData, inDimension.size  );
-}
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-- (OMDimension)dimension
-{
-  return OMMakeDimension(platform_Window_GetLocation(platformData), platform_Window_GetSize(platformData));
-}
-//----------------------------------------------------------------------------------------------------------------------------------
-@synthesize quitOnClose;
-//----------------------------------------------------------------------------------------------------------------------------------
-@synthesize visible;
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-- (void) setVisible:(BOOL)inVisible
-{
-  visible = inVisible;
-  platform_Window_SetVisible(platformData, visible);
-}
-//----------------------------------------------------------------------------------------------------------------------------------
-- (void) setMaximized:(BOOL)inMaximized
-{
-  platform_Window_SetMaximized(platformData, inMaximized);
-}
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-- (BOOL) maximized
-{
-  return platform_Window_GetMaximized(platformData);
-}
-//----------------------------------------------------------------------------------------------------------------------------------
-- (void) setMinimized:(BOOL)inMinimized
-{
-  platform_Window_SetMinimized(platformData, inMinimized);
-}
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-- (BOOL) minimized
-{
-  return platform_Window_GetMinimized(platformData);
-}
-//----------------------------------------------------------------------------------------------------------------------------------
-@synthesize child;
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-- (void) setChild:(id)inChild
-{
-  if(child != nil) [child release];
-  child = inChild;
-  if(child != nil)
+  if(_child != nil)
   {
-    [child retain];
-    OFObject *childsParent = (OFObject *)((OMControl *)child).parent;
+    ((OMControl *)_child).parent = nil;
+    [_child release];
+  }
+  _child = child;
+  if(_child != nil)
+  {
+    [_child retain];
+    OFObject *childsParent = (OFObject *)((OMControl *)_child).parent;
     if(childsParent != nil)
     {
-           if(object_getClass(childsParent) == [OMWindow  class]) [(OMWindow  *)childsParent removeChild:child];
-      else if(object_getClass(childsParent) == [OMControl class]) [(OMControl *)childsParent removeChild:child];
+           if(object_getClass(childsParent) == [OMWindow  class]) [(OMWindow  *)childsParent removeChild:_child];
+      else if(object_getClass(childsParent) == [OMControl class]) [(OMControl *)childsParent removeChild:_child];
     }
-    ((OMControl *)child).parent = self;
+    ((OMControl *)_child).parent = self;
   }
   [self paint];
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-@synthesize focus;
+@synthesize visible = _visible;
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-- (void) setFocus:(id)inFocus
+- (void) setVisible:(BOOL)visible
 {
-  if(focus != nil) ((OMControl *)focus).focused = NO;
-  focus = inFocus;
-  if(focus != nil) ((OMControl *)focus).focused = YES;
+  _visible = visible;
+  platform_Window_SetVisible(_platformData, _visible);
 }
+//==================================================================================================================================
+//Properties: virtual
+//----------------------------------------------------------------------------------------------------------------------------------
+- (void)     setLocation:(OMCoordinate)location {        platform_Window_SetLocation(_platformData, location); }
+- (OMCoordinate)location                        { return platform_Window_GetLocation(_platformData);           }
+//----------------------------------------------------------------------------------------------------------------------------------
+- (void) setSize:(OMSize)size {        platform_Window_SetSize(_platformData, size); }
+- (OMSize)  size              { return platform_Window_GetSize(_platformData);       }
+//----------------------------------------------------------------------------------------------------------------------------------
+- (void)   setDimension:(OMDimension)dimension {                        platform_Window_SetLocation(_platformData, dimension.origin); platform_Window_SetSize(_platformData, dimension.size  ); }
+- (OMDimension)dimension                       { return OMMakeDimension(platform_Window_GetLocation(_platformData),                   platform_Window_GetSize(_platformData));                }
+//----------------------------------------------------------------------------------------------------------------------------------
+- (void) setMaximized:(BOOL)maximized {        platform_Window_SetMaximized(_platformData, maximized); }
+- (BOOL)    maximized                 { return platform_Window_GetMaximized(_platformData);            }
+//----------------------------------------------------------------------------------------------------------------------------------
+- (void) setMinimized:(BOOL)minimized {        platform_Window_SetMinimized(_platformData, minimized); }
+- (BOOL)    minimized                 { return platform_Window_GetMinimized(_platformData);            }
 //==================================================================================================================================
 //Constructors
 + window
@@ -138,139 +100,144 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
   return [[[self alloc] init] autorelease];
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-+ windowWithTitle:(OFString *)Title
++ windowWithTitle:(OFString *)title
 {
-  return [[[self alloc] initWithTitle:Title] autorelease];
+  return [[[self alloc] initWithTitle:title] autorelease];
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-+ windowWithTitle:(OFString *)Title Size:(OMSize)Size
++ windowWithTitle:(OFString *)title Size:(OMSize)size
 {
-  return [[[self alloc] initWithTitle:Title Width:Size.width Height:Size.height] autorelease];
+  return [[[self alloc] initWithTitle:title Width:size.width Height:size.height] autorelease];
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-+ windowWithTitle:(OFString *)Title Width:(float)Width Height:(float)Height
++ windowWithTitle:(OFString *)title Width:(float)width Height:(float)height
 {
-  return [[[self alloc] initWithTitle:Title Width:Width Height:Height] autorelease];
+  return [[[self alloc] initWithTitle:title Width:width Height:height] autorelease];
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-+ windowWithTitle:(OFString *)Title Location:(OMCoordinate)Location
++ windowWithTitle:(OFString *)title Location:(OMCoordinate)location
 {
-  return [[[self alloc] initWithTitle:Title Left:Location.x Top:Location.y] autorelease];
+  return [[[self alloc] initWithTitle:title Left:location.x Top:location.y] autorelease];
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-+ windowWithTitle:(OFString *)Title Left:(float)Left Top:(float)Top
++ windowWithTitle:(OFString *)title Left:(float)left Top:(float)top
 {
-  return [[[self alloc] initWithTitle:Title Left:Left Top:Top] autorelease];
+  return [[[self alloc] initWithTitle:title Left:left Top:top] autorelease];
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-+ windowWithTitle:(OFString *)Title Location:(OMCoordinate)Location Size:(OMSize)Size
++ windowWithTitle:(OFString *)title Location:(OMCoordinate)location Size:(OMSize)size
 {
-  return [[[self alloc] initWithTitle:Title Left:Location.x Top:Location.y Width:Size.width Height:Size.height] autorelease];
+  return [[[self alloc] initWithTitle:title Left:location.x Top:location.y Width:size.width Height:size.height] autorelease];
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-+ windowWithTitle:(OFString *)Title Left:(float)Left Top:(float)Top Width:(float)Width Height:(float)Height
++ windowWithTitle:(OFString *)title Left:(float)left Top:(float)top Width:(float)width Height:(float)height
 {
-  return [[[self alloc] initWithTitle:Title Left:Left Top:Top Width:Width Height:Height] autorelease];
+  return [[[self alloc] initWithTitle:title Left:left Top:top Width:width Height:height] autorelease];
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-+ windowWithTitle:(OFString *)Title Dimension:(OMDimension)Dimension
++ windowWithTitle:(OFString *)title Dimension:(OMDimension)dimension
 {
-  return [[[self alloc] initWithTitle:Title Left:Dimension.origin.x Top:Dimension.origin.y Width:Dimension.size.width Height:Dimension.size.height] autorelease];
+  return [[[self alloc] initWithTitle:title Left:dimension.origin.x Top:dimension.origin.y Width:dimension.size.width Height:dimension.size.height] autorelease];
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-+ windowWithTitle:(OFString *)Title Rectangle:(OMRectangle)Rectangle
++ windowWithTitle:(OFString *)title Rectangle:(OMRectangle)rectangle
 {
-  return [[[self alloc] initWithTitle:Title
-                                 Left:Rectangle.topLeft.x
-                                  Top:Rectangle.topLeft.y
-                                Width:Rectangle.bottomRight.x - Rectangle.topLeft.x
-                               Height:Rectangle.bottomRight.y - Rectangle.topLeft.y] autorelease];
+  return [[[self alloc] initWithTitle:title
+                                 Left:rectangle.topLeft.x
+                                  Top:rectangle.topLeft.y
+                                Width:rectangle.bottomRight.x - rectangle.topLeft.x
+                               Height:rectangle.bottomRight.y - rectangle.topLeft.y] autorelease];
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 - init
 {
   self = [super init];
-  platformData = platform_Window_Create(self);
+  _platformData = platform_Window_Create(self);
   return self;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-- initWithTitle:(OFString *)Title
+- initWithTitle:(OFString *)title
 {
   self = [super init];
-  platformData = platform_Window_Create(self);
-  self.title   = Title;
+  _platformData = platform_Window_Create(self);
+  self.title    = title;
   return self;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-- initWithTitle:(OFString *)Title Width:(float)Width Height:(float)Height
+- initWithTitle:(OFString *)title Width:(float)width Height:(float)height
 {
   self = [super init];
-  platformData = platform_Window_Create(self);
-  self.title   = Title;
-  self.size    = OMMakeSize(Width, Height);
+  _platformData = platform_Window_Create(self);
+  self.title   = title;
+  self.size    = OMMakeSize(width, height);
   return self;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-- initWithTitle:(OFString *)Title Left:(float)Left Top:(float)Top
+- initWithTitle:(OFString *)title Left:(float)left Top:(float)top
 {
   self = [super init];
-  platformData  = platform_Window_Create(self);
-  self.title    = Title;
-  self.location = OMMakeCoordinate(Left, Top);
+  _platformData  = platform_Window_Create(self);
+  self.title    = title;
+  self.location = OMMakeCoordinate(left, top);
   return self;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-- initWithTitle:(OFString *)Title Left:(float)Left Top:(float)Top Width:(float)Width Height:(float)Height
+- initWithTitle:(OFString *)title Left:(float)left Top:(float)top Width:(float)width Height:(float)height
 {
   self = [super init];
-  platformData  = platform_Window_Create(self);
-  self.title    = Title;
-  self.location = OMMakeCoordinate(Left, Top);
-  self.size    = OMMakeSize(Width, Height);
+  _platformData  = platform_Window_Create(self);
+  self.title    = title;
+  self.location = OMMakeCoordinate(left, top);
+  self.size    = OMMakeSize(width, height);
   return self;
 }
 //==================================================================================================================================
 //Functions
 - (void) close
 {
-  platform_Window_Close(platformData);
+  platform_Window_Close(_platformData);
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 - (void) paint
 {
-  if(child == nil)
-    platform_Window_Redraw(platformData);
+  if(_child == nil)
+    platform_Window_Redraw(_platformData);
   else
   {
-    OMNativeSurface *surf = platform_Window_GetSurface(platformData);
-    [child renderToSurface:surf];
+    OMNativeSurface *surf = platform_Window_GetSurface(_platformData);
+    [_child renderToSurface:surf];
     [surf release];
   }
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-- (void) paintRectangle:(OMRectangle)Rectangle
+- (void) paintRectangle:(OMRectangle)rectangle
 {
-  if(child == nil)
-    platform_Window_RedrawRect(platformData, Rectangle);
+  if(_child == nil)
+    platform_Window_RedrawRect(_platformData, rectangle);
   else
   {
-    OMNativeSurface *surf = platform_Window_GetSurface(platformData);
-    [child renderToSurface:surf Rectangle:Rectangle];
+    OMNativeSurface *surf = platform_Window_GetSurface(_platformData);
+    [_child renderToSurface:surf Rectangle:rectangle];
     [surf release];
   }
 }
 //==================================================================================================================================
-- (void) removeChild:(id)Child
+- (void) removeChild:(id)child
 {
-  if(child == Child) [self setChild:nil];
+  if(_child == child) [self setChild:nil];
 }
 //==================================================================================================================================
 //Cleanup
 - (void)dealloc
 {
-  if(title != nil) [title release];
-  if(child != nil) [child release];
-  if(platformData != NULL) platform_Window_Cleanup(platformData);
+  if(_title != nil) [_title release];
+  if(_child != nil)
+  {
+    //any changes to [setChild] handling of previous _child should be reflected here
+    ((OMControl *)_child).parent = nil;
+    [_child release];
+  }
+  if(_platformData != NULL) platform_Window_Cleanup(_platformData);
   [super dealloc];
 }
 //==================================================================================================================================

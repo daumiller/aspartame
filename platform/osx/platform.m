@@ -88,15 +88,6 @@ void platform_Application_Init()
   [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-OFList *platform_Application_Arguments()
-{
-  OFList *args = [OFList list];
-  NSArray *cocoaArgs = [[NSProcessInfo processInfo] arguments];
-  for(NSString *str in cocoaArgs)
-    [args appendObject:[OFString stringWithUTF8String:[str UTF8String]]];
-  return args;
-}
-//----------------------------------------------------------------------------------------------------------------------------------
 void platform_Application_Loop()
 {
   [NSApp run];
