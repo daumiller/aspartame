@@ -20,56 +20,64 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 #import "OMApplication.h"
 #import "platform/platform.h"
 //==================================================================================================================================
-static OFObject <ApplicationHandler> *ilapplication_handler_object = nil;
+static OMApplication *OMApp = nil;
+static Class          OMApp_StartupClass    = Nil;
+static id             OMApp_StartupInstance = nil;
 //==================================================================================================================================
 @implementation OMApplication
 //----------------------------------------------------------------------------------------------------------------------------------
-+ (int) startWithClass:(Class)cls argc:(int *)argc argv:(char ***)argv;
++ (int) runWithClass:(Class)cls argc:(int *)argc argv:(char ***)argv;
 {
+  if(OMApp)      return -1;
   if(cls == Nil) return -1;
-  ilapplication_handler_object = (OFObject <ApplicationHandler> *)[cls alloc];
+  OMApp_StartupClass = cls;
   return of_application_main(argc, argv, [OMApplication class]);
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-+ (void)quit
++ (BOOL) quit
 {
-  platform_Application_Terminate();
+  return [OMApp quit];
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-+ (void)terminate
++ (void) terminate
 {
-  [OFApplication terminate];
+  platform_Application_Terminate();  //this may only terminate GUI/message-loop (win)
+  [OFApplication terminate];         //this may (win) or may not (osx) be reached
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-+ (void)terminateWithStatus:(int)status
+- init
 {
-  [OFApplication terminateWithStatus:status];
+  self = [super init];
+  if(self) OMApp = self;
+  return self;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 - (void) applicationDidFinishLaunching
 {
-  OFAutoreleasePool *pool = [OFAutoreleasePool new];
+  //here, we're automatically provided an AutoreleasePool by our caller (OFApplication *self)
   platform_Application_Init();
-  if(ilapplication_handler_object != nil)
-  {
-    OFList *args = platform_Application_Arguments();
-    if([ilapplication_handler_object initWithArguments:args] == NO)
-    {
-      [pool release];
-      platform_Application_Terminate();
-      return;
-    }
-  }
-  [pool release];
+  OMApp_StartupInstance = [[OMApp_StartupClass alloc] init];
+  if(OMApp_StartupInstance == nil) [OFApplication terminateWithStatus:-1];
+
   platform_Application_Loop();
-  [OFApplication terminateWithStatus:0]; //TEST: <-- needed on windows; needed on osx?
+  [OFApplication terminateWithStatus:0]; //may or may not be needed/reached
+}
+//----------------------------------------------------------------------------------------------------------------------------------
+- (BOOL) quit
+{
+  if(OMApp_StartupInstance != nil)
+    if([OMApp_StartupInstance respondsToSelector:@selector(applicationShouldTerminate)])
+      if([OMApp_StartupInstance applicationShouldTerminate] == NO)
+        return NO;
+  [OMApplication terminate];
+  return YES;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 - (void) applicationWillTerminate
 {
-  if(ilapplication_handler_object != nil)
-    if([ilapplication_handler_object respondsToSelector:@selector(cleanup)])
-      [ilapplication_handler_object cleanup];
+  if(OMApp_StartupInstance == nil) return;
+  if([OMApp_StartupInstance respondsToSelector:@selector(applicationWillTerminate)])
+    [OMApp_StartupInstance applicationWillTerminate]; 
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 @end

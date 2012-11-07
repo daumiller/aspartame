@@ -19,24 +19,24 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <ObjFW/ObjFW.h>
 //==================================================================================================================================
-@protocol ApplicationHandler
+@protocol OMApplicationDelegate
 //----------------------------------------------------------------------------------------------------------------------------------
-- (BOOL) initWithArguments:(OFList *)args;
 @optional
-- (void) cleanup;
-//----------------------------------------------------------------------------------------------------------------------------------
-@end
-//==================================================================================================================================
-@interface OMApplication : OFObject <OFApplicationDelegate>
-//----------------------------------------------------------------------------------------------------------------------------------
-+ (int)  startWithClass:(Class)cls argc:(int *)argc argv:(char ***)argv;
-+ (void) quit;
-+ (void) terminate;
-+ (void) terminateWithStatus:(int)status;
-- (void) applicationDidFinishLaunching;
+- (BOOL) applicationShouldTerminate;
 - (void) applicationWillTerminate;
 //----------------------------------------------------------------------------------------------------------------------------------
 @end
 //==================================================================================================================================
-#define OMAPPLICATION_MAIN(x) int main(int argc,char **argv){return [OMApplication startWithClass:[x class] argc:&argc argv:&argv];}
+@interface OMApplication : OFApplication <OFApplicationDelegate>
+//----------------------------------------------------------------------------------------------------------------------------------
++ (int)  runWithClass:(Class)cls argc:(int *)argc argv:(char ***)argv;
++ (BOOL) quit;
++ (void) terminate;
+- (void) applicationDidFinishLaunching;
+- (BOOL) quit;
+- (void) applicationWillTerminate;
+//----------------------------------------------------------------------------------------------------------------------------------
+@end
+//==================================================================================================================================
+#define OMAPPLICATION_MAIN(x) int main(int argc,char **argv){return [OMApplication runWithClass:[x class] argc:&argc argv:&argv];}
 //==================================================================================================================================

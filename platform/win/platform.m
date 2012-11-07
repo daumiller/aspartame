@@ -279,7 +279,9 @@ LRESULT CALLBACK platform_Window_Message(HWND hwnd, UINT msg, WPARAM wparam, LPA
       {
         DestroyWindow(hwnd);
         PostQuitMessage(0);
+        return 0;
       }
+      //default will fall through to DefWindowProc(), which will call DestroyWindow(), but not PostQuitMessage()
     break;
     
     case WM_SIZE:
