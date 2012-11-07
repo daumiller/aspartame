@@ -138,6 +138,7 @@ void platform_Window_Cleanup(void *data)
 OMNativeSurface *platform_Window_GetSurface(void *data)
 {
   //NOTE: i don't autorelease!
+  //WHY: this call will mainly be used during tight painting loops, where we'd like to avoid autorelease pools
   return [[OMNativeSurface alloc] initWithData:data];
 }
 //----------------------------------------------------------------------------------------------------------------------------------

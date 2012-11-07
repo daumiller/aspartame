@@ -29,12 +29,14 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 //==================================================================================================================================
 @interface OMApplication : OFObject <OFApplicationDelegate>
 //----------------------------------------------------------------------------------------------------------------------------------
-+ (void) startWithClass:(Class)cls;
++ (int)  startWithClass:(Class)cls argc:(int *)argc argv:(char ***)argv;
 + (void) quit;
++ (void) terminate;
++ (void) terminateWithStatus:(int)status;
 - (void) applicationDidFinishLaunching;
 - (void) applicationWillTerminate;
 //----------------------------------------------------------------------------------------------------------------------------------
 @end
 //==================================================================================================================================
-#define OMAPPLICATION_MAIN(x) int main(){[OMApplication startWithClass:[x class]]; return 0;}
+#define OMAPPLICATION_MAIN(x) int main(int argc,char **argv){return [OMApplication startWithClass:[x class] argc:&argc argv:&argv];}
 //==================================================================================================================================

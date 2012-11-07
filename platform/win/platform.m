@@ -23,11 +23,11 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 #include <windows.h>
 #include <malloc.h>
 #import <ObjFW/ObjFW.h>
-#import "GLCoordinate.h"
-#import "GLRectangle.h"
-#import "GLNativeSurface.h"
-#import "ILWindow.h"
-#import "ILControl.h"
+#import "OMCoordinate.h"
+#import "OMRectangle.h"
+#import "OMNativeSurface.h"
+#import "OMWindow.h"
+#import "OMControl.h"
 #import "platform.h"
 //==================================================================================================================================
 LRESULT CALLBACK platform_Window_Message (HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -55,7 +55,7 @@ wchar_t *UTF8_16(char *str8)
   return buff;
 }
 //==================================================================================================================================
-//ILApplication Helpers
+//OMApplication Helpers
 void platform_Application_Init()
 {
   //register a single, default, window class
@@ -118,8 +118,8 @@ void platform_Application_Terminate()
   PostQuitMessage(0);
 }
 //==================================================================================================================================
-//ILWindow Helpers
-void *platform_Window_Create(ILWindow *window)
+//OMWindow Helpers
+void *platform_Window_Create(OMWindow *window)
 {
   HINSTANCE hInst = (HINSTANCE)GetModuleHandle(NULL);
   HWND hwnd = CreateWindowEx(WS_EX_LEFT, L"aspartameWndCls", L"", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 1, 1, NULL, NULL, hInst, NULL);
@@ -138,10 +138,11 @@ void platform_Window_Cleanup(void *data)
   DestroyWindow((HWND)data);
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-GLNativeSurface *platform_Window_GetSurface(void *data)
+OMNativeSurface *platform_Window_GetSurface(void *data)
 {
   //NOTE: i don't autorelease!
-  return [[GLNativeSurface alloc] initWithData:data];
+  //WHY: this call will mainly be used during tight painting loops, where we'd like to avoid autorelease pools
+  return [[OMNativeSurface alloc] initWithData:data];
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 void platform_Window_Redraw(void *data)
@@ -156,7 +157,7 @@ void platform_Window_Redraw(void *data)
   ReleaseDC(wnd, hdc);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void platform_Window_RedrawRect(void *data, GLRectangle Rectangle)
+void platform_Window_RedrawRect(void *data, OMRectangle Rectangle)
 {
   RECT rec;
   rec.left   = (int)Rectangle.topLeft.x;
@@ -182,33 +183,33 @@ void platform_Window_SetTitle(void *data, OFString *Title)
   [pool drain]; //force release of hidden OFObject containing buff8's memory
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-GLCoordinate platform_Window_GetLocation(void *data)
+OMCoordinate platform_Window_GetLocation(void *data)
 {
   RECT rc;
   GetWindowRect((HWND)data, &rc);
-  return GLMakeCoordinate((float)rc.left, (float)rc.top);
+  return OMMakeCoordinate((float)rc.left, (float)rc.top);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void platform_Window_SetLocation(void *data, GLCoordinate Location)
+void platform_Window_SetLocation(void *data, OMCoordinate Location)
 {
   SetWindowPos((HWND)data, NULL, (int)Location.x, (int)Location.y, 0, 0, SWP_NOACTIVATE|SWP_NOOWNERZORDER|SWP_NOSIZE|SWP_NOZORDER);
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-GLSize platform_Window_GetSize(void *data)
+OMSize platform_Window_GetSize(void *data)
 {
   RECT rc;
   GetWindowRect((HWND)data, &rc);
-  return GLMakeSize((float)(rc.right - rc.left), (float)(rc.bottom - rc.top));
+  return OMMakeSize((float)(rc.right - rc.left), (float)(rc.bottom - rc.top));
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-void platform_Window_SetSize(void *data, GLSize Size)
+void platform_Window_SetSize(void *data, OMSize Size)
 {
   SetWindowPos((HWND)data, NULL, 0, 0, (int)Size.width, (int)Size.height, SWP_NOACTIVATE|SWP_NOOWNERZORDER|SWP_NOMOVE|SWP_NOZORDER);
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 void platform_Window_SetVisible(void *data, BOOL visible)
 {
-  //TODO: should we SW_SHOWNA (show without activating) here? or should ILWindow have an "activate" function?
+  //TODO: should we SW_SHOWNA (show without activating) here? or should OMWindow have an "activate" function?
   //TODO: should we (also) be using AnimateWindow()???
   if(visible == YES)
     ShowWindow((HWND)data, SW_SHOW);
@@ -248,7 +249,7 @@ LRESULT CALLBACK platform_Window_Message(HWND hwnd, UINT msg, WPARAM wparam, LPA
   if(ptr == NULL) return DefWindowProc(hwnd, msg, wparam, lparam);
   
   BOOL childSized = NO;
-  ILWindow *wnd = (ILWindow *)ptr;
+  OMWindow *wnd = (OMWindow *)ptr;
   switch(msg)
   {
     case WM_ERASEBKGND:
@@ -257,7 +258,7 @@ LRESULT CALLBACK platform_Window_Message(HWND hwnd, UINT msg, WPARAM wparam, LPA
     case WM_PAINT:
       if(GetUpdateRect(hwnd, NULL, 0) != 0)
       {
-        GLRectangle updateRect;
+        OMRectangle updateRect;
         PAINTSTRUCT ps;
         BeginPaint(hwnd, &ps);
         updateRect.topLeft.x     = (float)ps.rcPaint.left;
@@ -286,7 +287,7 @@ LRESULT CALLBACK platform_Window_Message(HWND hwnd, UINT msg, WPARAM wparam, LPA
       {
         RECT rc;
         GetClientRect(hwnd, &rc);
-        ((ILControl *)wnd.child).dimension = GLMakeDimension(GLMakeCoordinate(0.0f, 0.0f), GLMakeSize((float)rc.right, (float)rc.bottom));
+        ((OMControl *)wnd.child).dimension = OMMakeDimension(OMMakeCoordinate(0.0f, 0.0f), OMMakeSize((float)rc.right, (float)rc.bottom));
         childSized = YES;
       }
       //check for maximization
@@ -311,7 +312,7 @@ LRESULT CALLBACK platform_Window_Message(HWND hwnd, UINT msg, WPARAM wparam, LPA
         //REFACTOR: this whole procedure spaghetti-ish, but we want to resize our child before performing any selectors
         RECT rc;
         GetClientRect(hwnd, &rc);
-        ((ILControl *)wnd.child).dimension = GLMakeDimension(GLMakeCoordinate(0.0f, 0.0f), GLMakeSize((float)rc.right, (float)rc.bottom));
+        ((OMControl *)wnd.child).dimension = OMMakeDimension(OMMakeCoordinate(0.0f, 0.0f), OMMakeSize((float)rc.right, (float)rc.bottom));
       }
       if(wnd.selResized != NULL)
         [wnd.controller performSelector:wnd.selResized];

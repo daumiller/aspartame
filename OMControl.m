@@ -73,7 +73,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 //==================================================================================================================================
 - (void) paint
 {
-  [buffer fillWithColor:OMMakeColorRGBA(0.0f, 1.0f, 1.0f, 1.0f)];
+  [buffer fillWithColor:OMMakeColorRGBA(0.5f, 1.0f, 0.75f, 1.0f)];
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 - (void) paintDimension:(OMDimension)Dimension

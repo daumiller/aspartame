@@ -24,17 +24,26 @@ static OFObject <ApplicationHandler> *ilapplication_handler_object = nil;
 //==================================================================================================================================
 @implementation OMApplication
 //----------------------------------------------------------------------------------------------------------------------------------
-+ (void)startWithClass:(Class)cls
++ (int) startWithClass:(Class)cls argc:(int *)argc argv:(char ***)argv;
 {
-  if(cls == Nil) return;
-  int argc=0; char *_argv=""; char **argv=&_argv;
+  if(cls == Nil) return -1;
   ilapplication_handler_object = (OFObject <ApplicationHandler> *)[cls alloc];
-  of_application_main(&argc, &argv, [OMApplication class]);
+  return of_application_main(argc, argv, [OMApplication class]);
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 + (void)quit
 {
   platform_Application_Terminate();
+}
+//----------------------------------------------------------------------------------------------------------------------------------
++ (void)terminate
+{
+  [OFApplication terminate];
+}
+//----------------------------------------------------------------------------------------------------------------------------------
++ (void)terminateWithStatus:(int)status
+{
+  [OFApplication terminateWithStatus:status];
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 - (void) applicationDidFinishLaunching
@@ -53,6 +62,7 @@ static OFObject <ApplicationHandler> *ilapplication_handler_object = nil;
   }
   [pool release];
   platform_Application_Loop();
+  [OFApplication terminateWithStatus:0]; //TEST: <-- needed on windows; needed on osx?
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 - (void) applicationWillTerminate
