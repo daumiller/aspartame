@@ -25,6 +25,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 void    platform_Application_Init();
 OFList *platform_Application_Arguments();
 void    platform_Application_Loop();
+void    platform_Application_Quit();
 void    platform_Application_Terminate();
 //==================================================================================================================================
 //ILWindow Helpers

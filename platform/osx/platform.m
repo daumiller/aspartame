@@ -63,7 +63,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 - (void) windowWillClose:(NSNotification *)notification
 {
   if([ilWindow quitOnClose])
-    [NSApp terminate:self];
+    platform_Application_Quit();
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 - (void) windowDidResize:(NSNotification *)notification
@@ -100,6 +100,11 @@ OFList *platform_Application_Arguments()
 void platform_Application_Loop()
 {
   [NSApp run];
+}
+//----------------------------------------------------------------------------------------------------------------------------------
+void platform_Application_Quit()
+{
+  [NSApp stop:nil];
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 void platform_Application_Terminate()

@@ -19,58 +19,52 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import "OMApplication.h"
 #import "platform/platform.h"
+
 //==================================================================================================================================
-static OFObject <ApplicationHandler> *ilapplication_handler_object = nil;
+static OFObject *OMApplication_mainInstance = nil;
+
+//==================================================================================================================================
+static void atexit_handler(void)
+{
+  if(OMApplication_mainInstance)
+    if([OMApplication_mainInstance respondsToSelector:@selector(applicationWillTerminate)])
+      [OMApplication_mainInstance applicationWillTerminate];
+  [OMApplication_mainInstance release];
+}
+
 //==================================================================================================================================
 @implementation OMApplication
 //----------------------------------------------------------------------------------------------------------------------------------
-+ (int) startWithClass:(Class)cls argc:(int *)argc argv:(char ***)argv;
++ (int)runWithClass:(Class)cls;
 {
-  if(cls == Nil) return -1;
-  ilapplication_handler_object = (OFObject <ApplicationHandler> *)[cls alloc];
-  return of_application_main(argc, argv, [OMApplication class]);
+  if(OMApplication_mainInstance) return -1;
+  if(cls == Nil)                 return -1;
+  OFAutoreleasePool *pool = [[OFAutoreleasePool alloc] init];
+  platform_Application_Init();
+  OMApplication_mainInstance = [[cls alloc] init];
+  if([OMApplication_mainInstance respondsToSelector:@selector(applicationDidFinishLaunching)])
+  {
+    printf("responds\n");
+    [OMApplication_mainInstance applicationDidFinishLaunching];
+  }
+  else
+    printf("doesn't respond\n");
+  platform_Application_Loop();
+  atexit_handler();
+  [pool drain];
+  return 0;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 + (void)quit
 {
-  platform_Application_Terminate();
+  platform_Application_Quit();
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 + (void)terminate
 {
-  [OFApplication terminate];
+  platform_Application_Terminate();
 }
-//----------------------------------------------------------------------------------------------------------------------------------
-+ (void)terminateWithStatus:(int)status
-{
-  [OFApplication terminateWithStatus:status];
-}
-//----------------------------------------------------------------------------------------------------------------------------------
-- (void) applicationDidFinishLaunching
-{
-  OFAutoreleasePool *pool = [OFAutoreleasePool new];
-  platform_Application_Init();
-  if(ilapplication_handler_object != nil)
-  {
-    OFList *args = platform_Application_Arguments();
-    if([ilapplication_handler_object initWithArguments:args] == NO)
-    {
-      [pool release];
-      platform_Application_Terminate();
-      return;
-    }
-  }
-  [pool release];
-  platform_Application_Loop();
-  [OFApplication terminateWithStatus:0]; //TEST: <-- needed on windows; needed on osx?
-}
-//----------------------------------------------------------------------------------------------------------------------------------
-- (void) applicationWillTerminate
-{
-  if(ilapplication_handler_object != nil)
-    if([ilapplication_handler_object respondsToSelector:@selector(cleanup)])
-      [ilapplication_handler_object cleanup];
-}
-//----------------------------------------------------------------------------------------------------------------------------------
+//==================================================================================================================================
 @end
+
 //==================================================================================================================================
