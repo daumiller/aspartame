@@ -1,8 +1,8 @@
 aspartame
 ======
 
-Cross-Platform GUI Toolkit for ObjFW (based on atropine)
+Cross-Platform GUI/windowing library for ObjFW.
+A GDK wrapper, and base control library, to compliment atropine..
 
-Part of the OCM (Objective-C Molecules) library, aspartame will be a cross-platform GUI toolkit for ObjFW, if I ever do some work on it... Still in an extremely early stage of development, there's not much to this yet.
-
+Part of the OCM (Objective-C Molecules (prefix "OM")) library.
 Licensed under GPLv3.
