@@ -1,5 +1,5 @@
 //==================================================================================================================================
-// OMDisplayManager.h
+// OMSignalManager.h
 /*==================================================================================================================================
 Copyright © 2012 Dillon Aumiller <dillonaumiller@gmail.com>
 
@@ -18,23 +18,29 @@ You should have received a copy of the GNU General Public License
 along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <ObjFW/ObjFW.h>
-@class OMDisplay;
 
 //==================================================================================================================================
-@interface OMDisplayManager : OFObject
+@interface OMSignalManager : OFObject
 {
   @private
-    void      *_gdkDisplayManager;
-    OMDisplay *_defaultDisplay;
-
+    OFMutableDictionary *_signals;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-@property (readonly) void      *gdkDisplayManager;
-@property (assign  ) OMDisplay *defaultDisplay;
+@property (readonly) void *gdkScreen;
+
+
 //----------------------------------------------------------------------------------------------------------------------------------
-+ sharedManager;
++ signalManagerForNative:(void *)gdkObject;
+
 //----------------------------------------------------------------------------------------------------------------------------------
-- (OFArray *)listDisplays;
+- initWithNative:(void *)gdkObject;
+
+//----------------------------------------------------------------------------------------------------------------------------------
+- (int)connectSignal:(OFString *)signalName toFunction:(void (*)(void))function;
+- (void)disconnectSignal:(OFString *)signalName;
+- (void)disconnectSignalById:(int)connectionId;
+- (BOOL)doesHandle:(OFString *)signalName;
+
 //----------------------------------------------------------------------------------------------------------------------------------
 @end
 

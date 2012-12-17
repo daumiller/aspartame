@@ -73,7 +73,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 // - (void)pushEvent;
 // - (BOOL)hasPendingEvents
 
-// - (OFArray *)getDevices;
+// - (OFArray *)listDevices;
 // - ... captureDevice (_device_grab)
 // - ... uncaptureDevice (_device_ungrab)
 // - (BOOL) isDeviceCaptured

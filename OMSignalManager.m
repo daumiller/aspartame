@@ -1,5 +1,5 @@
 //==================================================================================================================================
-// OMDisplayManager.h
+// OMSignalManager.m
 /*==================================================================================================================================
 Copyright © 2012 Dillon Aumiller <dillonaumiller@gmail.com>
 
@@ -17,24 +17,25 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
-#import <ObjFW/ObjFW.h>
-@class OMDisplay;
+#import "OMSignalManager.h"
+#import <gdk/gdk.h>
 
 //==================================================================================================================================
-@interface OMDisplayManager : OFObject
-{
-  @private
-    void      *_gdkDisplayManager;
-    OMDisplay *_defaultDisplay;
+@implementation OMSignalManager
 
-}
 //----------------------------------------------------------------------------------------------------------------------------------
-@property (readonly) void      *gdkDisplayManager;
-@property (assign  ) OMDisplay *defaultDisplay;
++ signalManagerForNative:(void *)gdkObject;
+
 //----------------------------------------------------------------------------------------------------------------------------------
-+ sharedManager;
+- initWithNative:(void *)gdkObject;
+
 //----------------------------------------------------------------------------------------------------------------------------------
-- (OFArray *)listDisplays;
+- (int)addConnection:(OFString *)signalName toFunction:(void (*)(void))function;
+- (void)delConnection:(OFString *)signalName;
+- (void)delConnectionById:(int)connectionId;
+- (BOOL)hasConnection:(OFString *)signalName;
+- (OFDictionar *)listConnections;
+
 //----------------------------------------------------------------------------------------------------------------------------------
 @end
 

@@ -78,7 +78,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
-- (OFArray *)getDisplays
+- (OFArray *)listDisplays
 {
   OFMutableArray *displays = [[OFMutableArray alloc] init];
   

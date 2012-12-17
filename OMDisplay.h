@@ -19,20 +19,29 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <ObjFW/ObjFW.h>
 @class OMScreen;
+@class OMDisplay;
 //@class OMDeviceManager;
+
+@protocol OMDisplayDelegate <OFObject>
+@optional
+-(void)displayClosed:(OMDisplay *)dipslay;
+-(void)displayOpened:(OMDisplay *)display;
+@end
 
 //==================================================================================================================================
 @interface OMDisplay : OFObject
 {
   @private
-    void     *_gdkDisplay;
-    OFString *_name;
-    OMScreen *_defaultScreen;
+    void              *_gdkDisplay;
+    OFString          *_name;
+    OMScreen          *_defaultScreen;
+    OMDisplayDelegate *_delegate;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-@property (readonly) void     *gdkDisplay;
-@property (readonly) OFString *name;
-@property (readonly) OMScreen *defaultScreen;
+@property (readonly) void      *gdkDisplay;
+@property (readonly) OFString  *name;
+@property (readonly) OMScreen  *defaultScreen;
+@property (retain  ) OMDisplay *delegate;
 //@property (readonly) OMDeviceManager *deviceManager;
 //----------------------------------------------------------------------------------------------------------------------------------
 + defaultDisplay;
@@ -51,7 +60,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 // - (void)pushEvent;
 // - (BOOL)hasPendingEvents
 
-// - (OFArray *)getDevices;
+// - (OFArray *)listDevices;
 // - ... captureDevice (_device_grab)
 // - ... uncaptureDevice (_device_ungrab)
 // - (BOOL) isDeviceCaptured
