@@ -19,18 +19,28 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <ObjFW/ObjFW.h>
 @class OMDisplay;
+@class OMDisplayManager;
+@class OMSignalManager;
+
+//==================================================================================================================================
+@protocol OMDisplayManagerDelegate <OFObject>
+@optional
+-(void)displayManager:(OMDisplayManager *)manager displayOpened:(OMDisplay *)display;
+@end
 
 //==================================================================================================================================
 @interface OMDisplayManager : OFObject
 {
   @private
-    void      *_gdkDisplayManager;
-    OMDisplay *_defaultDisplay;
-
+    void                        *_gdkDisplayManager;
+    OMDisplay                   *_defaultDisplay;
+    id<OMDisplayManagerDelegate> _delegate;
+    OMSignalManager             *_signalManager;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-@property (readonly) void      *gdkDisplayManager;
-@property (assign  ) OMDisplay *defaultDisplay;
+@property (readonly) void                         *gdkDisplayManager;
+@property (assign  ) OMDisplay                    *defaultDisplay;
+@property (retain  ) id<OMDisplayManagerDelegate>  delegate;
 //----------------------------------------------------------------------------------------------------------------------------------
 + sharedManager;
 //----------------------------------------------------------------------------------------------------------------------------------

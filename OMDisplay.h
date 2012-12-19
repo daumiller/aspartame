@@ -20,11 +20,13 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 #import <ObjFW/ObjFW.h>
 @class OMScreen;
 @class OMDisplay;
+@class OMSignalManager;
 //@class OMDeviceManager;
 
+//==================================================================================================================================
 @protocol OMDisplayDelegate <OFObject>
 @optional
--(void)displayClosed:(OMDisplay *)dipslay;
+-(void)displayClosed:(OMDisplay *)display dueToError:(BOOL)dueToError;
 -(void)displayOpened:(OMDisplay *)display;
 @end
 
@@ -32,24 +34,26 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 @interface OMDisplay : OFObject
 {
   @private
-    void              *_gdkDisplay;
-    OFString          *_name;
-    OMScreen          *_defaultScreen;
-    OMDisplayDelegate *_delegate;
+    void                 *_gdkDisplay;
+    OFString             *_name;
+    OMScreen             *_defaultScreen;
+    id<OMDisplayDelegate> _delegate;
+    OMSignalManager      *_signalManager;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-@property (readonly) void      *gdkDisplay;
-@property (readonly) OFString  *name;
-@property (readonly) OMScreen  *defaultScreen;
-@property (retain  ) OMDisplay *delegate;
+@property (readonly) void                 *gdkDisplay;
+@property (readonly) OFString             *name;
+@property (readonly) OMScreen             *defaultScreen;
+@property (retain  ) id<OMDisplayDelegate> delegate;
 //@property (readonly) OMDeviceManager *deviceManager;
 //----------------------------------------------------------------------------------------------------------------------------------
 + defaultDisplay;
 + openDisplay:(OFString *)displayName;
 //----------------------------------------------------------------------------------------------------------------------------------
++ displayWithNativeDisplay:(void *)gdkDisplay;
 - initWithNativeDisplay:(void *)gdkDisplay;
 //----------------------------------------------------------------------------------------------------------------------------------
-- (OFArray *)getScreens;
+- (OFArray *)listScreens;
 - (void) sync;
 - (void) flush;
 - (BOOL) isClosed;
@@ -64,8 +68,6 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 // - ... captureDevice (_device_grab)
 // - ... uncaptureDevice (_device_ungrab)
 // - (BOOL) isDeviceCaptured
-
-// - (OFWindow *)windowAtLocation
 
 //----------------------------------------------------------------------------------------------------------------------------------
 @end

@@ -18,34 +18,45 @@ You should have received a copy of the GNU General Public License
 along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <ObjFW/ObjFW.h>
+#import <atropine/OMRectangle.h>
+@class OMScreen;
+@class OMSignalManager;
+
+//==================================================================================================================================
+@protocol OMScreenDelegate <OFObject>
+@optional
+-(void)screenCompositedChanged:(OMScreen *)screen;
+-(void)screenMonitorsChanged  :(OMScreen *)screen;
+-(void)screenDimensionsChanged:(OMScreen *)screen;
+@end
 
 //==================================================================================================================================
 @interface OMScreen : OFObject
 {
   @private
-    void     *_gdkScreen;
+    void                *_gdkScreen;
+    id<OMScreenDelegate> _delegate;
+    OMSignalManager     *_signalManager;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 @property (readonly) void *gdkScreen;
-@property (readonly) int screenIndex;
-@property (readonly) int width;
-@property (readonly) int height;
-@property (readonly) int mmWidth;
-@property (readonly) int mmHeight;
-@property (readonly) int monitorCount;
-@property (readonly) int primaryMonitor;
-
-//----------------------------------------------------------------------------------------------------------------------------------
+@property (readonly) int   screenIndex;
+@property (readonly) int   width;
+@property (readonly) int   height;
+@property (readonly) int   mmWidth;
+@property (readonly) int   mmHeight;
+@property (readonly) int   monitorCount;
+@property (readonly) int   primaryMonitor;
+@property (readonly) BOOL  isComposited;
+@property (retain  ) id<OMScreenDelegate> delegate;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 - initWithNativeScreen:(void *)gdkScreen;
 
 //----------------------------------------------------------------------------------------------------------------------------------
-- (BOOL) isComposited;
-
-// -(OMRectangle)monitorGeometry:(int)monitorIndex;  //monitor coordinates relative to screen
-// -(OMRectangle)monitorWorkspace:(int)monitorIndex; //monitor coordinates relative to screen, minus system panels/areas
-// -(int)monitorAtPoint:(OMCoordinate)point;
+-(OMDimension)monitorGeometry:(int)monitorIndex;  //monitor coordinates relative to screen
+-(OMDimension)monitorWorkspace:(int)monitorIndex; //monitor coordinates relative to screen, minus system panels/areas
+-(int)monitorAtPoint:(OMCoordinate)point;
 
 // -(OMWindow *)rootWindow;
 // -(OFArray *)listTopLevelWindows;

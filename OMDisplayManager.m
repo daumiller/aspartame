@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import "OMDisplayManager.h"
+#import "OMSignalManager.h"
 #import "OMDisplay.h"
 #include <gdk/gdk.h>
 
@@ -25,9 +26,21 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 #define NATIVE_DISPLAYMANAGER ((GdkDisplayManager *)_gdkDisplayManager)
 
 //==================================================================================================================================
-@implementation OMDisplayManager
+// Signal Handling Proxies
+//==================================================================================================================================
+static void signal_displayOpened(void *nativeManager, void *nativeDisplay, void *data)
+{
+  OMDisplayManager *dispMan = (OMDisplayManager *)[OMSignalManager nativeToWrapper:nativeManager];
+  OMDisplay *disp = [[OMDisplay alloc] initWithNativeDisplay:nativeDisplay];
+  [dispMan.delegate displayManager:dispMan displayOpened:disp]; //respondsToSelector: is checked before connection
+  [disp release];
+}
 
-//----------------------------------------------------------------------------------------------------------------------------------
+//==================================================================================================================================
+@implementation OMDisplayManager
+//==================================================================================================================================
+// Constructors/Destructor
+//==================================================================================================================================
 + sharedManager
 {
   static OMDisplayManager *singleton = nil;
@@ -46,20 +59,26 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
   if(self)
   {
     _gdkDisplayManager = (void *)gdk_display_manager_get();
+    _signalManager = [[OMSignalManager alloc] initWithNative:_gdkDisplayManager forObject:self];
     _defaultDisplay = nil;
+    _delegate = nil;
   }
   return self;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 - (void) dealloc
 {
+  self.delegate = nil; //will handle the [_signalManager breakAll] call for us
+  [_signalManager release];
   [_defaultDisplay release];
   [super dealloc];
 }
 
-//----------------------------------------------------------------------------------------------------------------------------------
+//==================================================================================================================================
+// Properties
+//==================================================================================================================================
 @synthesize gdkDisplayManager = _gdkDisplayManager;
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+//----------------------------------------------------------------------------------------------------------------------------------
 - (OMDisplay *)defaultDisplay
 {
   if(_defaultDisplay == nil)
@@ -75,6 +94,19 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
   if(_defaultDisplay) [_defaultDisplay release];
   gdk_display_manager_set_default_display(NATIVE_DISPLAYMANAGER, (GdkDisplay *)(display.gdkDisplay));
   _defaultDisplay = [display retain];
+}
+//----------------------------------------------------------------------------------------------------------------------------------
+- (id<OMDisplayManagerDelegate>)delegate { return _delegate; }
+- (void)setDelegate:(id<OMDisplayManagerDelegate>)delegate
+{
+  if(_delegate)
+  {
+    [_signalManager breakAll];
+    [_delegate release];
+  }
+  _delegate = [delegate retain];
+  if([_delegate respondsToSelector:@selector(displayManager:displayOpened:)])
+    [_signalManager makeConnection:@"display-opened" toFunction:(void (*)(void))signal_displayOpened];
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------
