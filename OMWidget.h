@@ -211,6 +211,7 @@ typedef struct
 -(void *)getNativeVisual;
 
 //----------------------------------------------------------------------------------------------------------------------------------
+-(void)show;
 -(void)showWithoutRaising;
 -(void)raise;
 -(void)lower;

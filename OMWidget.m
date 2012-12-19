@@ -59,12 +59,12 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 //----------------------------------------------------------------------------------------------------------------------------------
 + widgetWithParent:(OMWidget *)parent title:(OFString *)title x:(int)x y:(int)y width:(int)width height:(int)height style:(OMWidgetStyle)style
 {
-  return [[[OMWidget alloc] initWithParent:(void *)parent title:title events:0 x:x y:y width:width height:height class:0 type:0 style:style visual:nil] autorelease];
+  return [[[OMWidget alloc] initWithParent:(void *)parent title:title x:x y:y width:width height:height style:style] autorelease];
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 + widgetWithNativeParent:(void *)parent title:(OFString *)title x:(int)x y:(int)y width:(int)width height:(int)height style:(OMWidgetStyle)style
 {
-  return [[[OMWidget alloc] initWithParent:parent title:title events:0 x:x y:y width:width height:height class:0 type:0 style:style visual:nil] autorelease];
+  return [[[OMWidget alloc] initWithParent:parent title:title x:x y:y width:width height:height style:style] autorelease];
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 + widgetWithParent:(OMWidget *)parent title:(OFString *)title events:(OMWidgetEvent)events x:(int)x y:(int)y width:(int)width height:(int)height class:(OMWidgetClass)class type:(OMWidgetType)type style:(OMWidgetStyle)style visual:(OMVisual *)visual
@@ -323,6 +323,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 //==================================================================================================================================
 // Z-Order & Focus
 //==================================================================================================================================
+-(void)show               { gdk_window_show         (NATIVE_WINDOW);    }
 -(void)showWithoutRaising { gdk_window_show_unraised(NATIVE_WINDOW);    }
 -(void)raise              { gdk_window_raise        (NATIVE_WINDOW);    }
 -(void)lower              { gdk_window_lower        (NATIVE_WINDOW);    }
