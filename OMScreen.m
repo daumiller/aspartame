@@ -19,6 +19,8 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import "OMScreen.h"
 #import "OMSignalManager.h"
+#import "OMWidget.h"
+#import "OMVisual.h"
 #import <gdk/gdk.h>
 
 //==================================================================================================================================
@@ -51,6 +53,11 @@ static void signal_DimensionsChanged(void *nativeScreen, void *data)
 //==================================================================================================================================
 // Constructors/Destructor
 //==================================================================================================================================
++ screenWithNativeScreen:(void *)gdkScreen
+{
+  return [[[OMScreen alloc] initWithNativeScreen:gdkScreen] autorelease];
+}
+//----------------------------------------------------------------------------------------------------------------------------------
 - initWithNativeScreen:(void *)gdkScreen
 {
   self = [super init];
@@ -116,12 +123,50 @@ static void signal_DimensionsChanged(void *nativeScreen, void *data)
   return gdk_screen_get_monitor_at_point(NATIVE_SCREEN, (int)point.x, (int)point.y);
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-// -(OMWindow *)rootWindow;
-// -(OFArray *)listTopLevelWindows;
+-(OMWidget *)getRootWindow
+{
+  return [OMWidget widgetWithNativeWindow:gdk_screen_get_root_window(NATIVE_SCREEN)];
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-(OFArray *)listTopLevelWindows
+{
+  OFMutableArray *omWidgets = [[OFMutableArray alloc] init];
+
+  GList *gdkWindows = gdk_screen_get_toplevel_windows(NATIVE_SCREEN);
+  unsigned int gdkCount = g_list_length(gdkWindows);
+  for(unsigned int i=0; i<gdkCount; i++)
+    [omWidgets addObject:[OMWidget widgetWithNativeWindow:g_list_nth_data(gdkWindows, i)]];
+  g_list_free(gdkWindows);
+
+  OFArray *retArray = [OFArray arrayWithArray:omWidgets];
+  [omWidgets release];
+  return retArray;
+}
 //----------------------------------------------------------------------------------------------------------------------------------
-//-(OFArray *)listVisuals;
-//-(OMVisual *)systemVisual;
-//-(OMVisual *)rgbaVisual;
+-(OFArray *)listVisuals
+{
+  OFMutableArray *omVisuals = [[OFMutableArray alloc] init];
+
+  GList *gdkVisuals = gdk_screen_get_toplevel_windows(NATIVE_SCREEN);
+  unsigned int gdkCount = g_list_length(gdkVisuals);
+  for(unsigned int i=0; i<gdkCount; i++)
+    [omVisuals addObject:[OMVisual visualWithNativeVisual:g_list_nth_data(gdkVisuals, i)]];
+  g_list_free(gdkVisuals);
+
+  OFArray *retArray = [OFArray arrayWithArray:omVisuals];
+  [omVisuals release];
+  return retArray;
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-(OMVisual *)getSystemVisual
+{
+  return [OMVisual visualWithNativeVisual:gdk_screen_get_system_visual(NATIVE_SCREEN)];
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-(OMVisual *)getRGBAVisual
+{
+  return [OMVisual visualWithNativeVisual:gdk_screen_get_rgba_visual(NATIVE_SCREEN)];
+}
 
 
 //==================================================================================================================================

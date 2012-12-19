@@ -20,6 +20,8 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 #import "OMScreen.h"
 #import "OMDisplay.h"
 #import "OMDisplayManager.h"
+#import "OMVisual.h"
+#import "OMWidget.h"
 //----------------------------------------------------------------------------------------------------------------------------------
 #define ASPARTAME_NATIVE_LOOKUP_STRING "aspartame-object"
 

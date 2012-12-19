@@ -89,6 +89,7 @@ static void signal_opened(void *nativeDisplay, void *data)
 - (OFString *)name { return [OFString stringWithUTF8String:gdk_display_get_name(NATIVE_DISPLAY)]; }
 - (OMScreen *)defaultScreen { return [[[OMScreen alloc] initWithNativeScreen:gdk_display_get_default_screen(NATIVE_DISPLAY)] autorelease]; };
 //@property (readonly) OFDeviceManager *deviceManager;
+-(BOOL)supportsCompositing { return gdk_display_supports_composite(NATIVE_DISPLAY); }
 //----------------------------------------------------------------------------------------------------------------------------------
 - (id<OMDisplayDelegate>)delegate { return _delegate; }
 - (void)setDelegate:(id<OMDisplayDelegate>)delegate

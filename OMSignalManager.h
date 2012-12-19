@@ -22,9 +22,8 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 //==================================================================================================================================
 @interface OMSignalManager : OFObject
 {
-  @private
-    void                *_gdkObject;
-    OFMutableDictionary *_signals;
+  void                *_gdkObject;
+  OFMutableDictionary *_signals;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 @property (readonly) void *gdkObject;

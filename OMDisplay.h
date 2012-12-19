@@ -33,18 +33,18 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 //==================================================================================================================================
 @interface OMDisplay : OFObject
 {
-  @private
-    void                 *_gdkDisplay;
-    OFString             *_name;
-    OMScreen             *_defaultScreen;
-    id<OMDisplayDelegate> _delegate;
-    OMSignalManager      *_signalManager;
+  void                 *_gdkDisplay;
+  OFString             *_name;
+  OMScreen             *_defaultScreen;
+  id<OMDisplayDelegate> _delegate;
+  OMSignalManager      *_signalManager;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 @property (readonly) void                 *gdkDisplay;
 @property (readonly) OFString             *name;
 @property (readonly) OMScreen             *defaultScreen;
 @property (retain  ) id<OMDisplayDelegate> delegate;
+@property (readonly) BOOL                  supportsCompositing;
 //@property (readonly) OMDeviceManager *deviceManager;
 //----------------------------------------------------------------------------------------------------------------------------------
 + defaultDisplay;

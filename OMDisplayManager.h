@@ -31,11 +31,10 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 //==================================================================================================================================
 @interface OMDisplayManager : OFObject
 {
-  @private
-    void                        *_gdkDisplayManager;
-    OMDisplay                   *_defaultDisplay;
-    id<OMDisplayManagerDelegate> _delegate;
-    OMSignalManager             *_signalManager;
+  void                        *_gdkDisplayManager;
+  OMDisplay                   *_defaultDisplay;
+  id<OMDisplayManagerDelegate> _delegate;
+  OMSignalManager             *_signalManager;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 @property (readonly) void                         *gdkDisplayManager;

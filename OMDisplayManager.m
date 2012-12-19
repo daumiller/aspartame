@@ -122,7 +122,7 @@ static void signal_displayOpened(void *nativeManager, void *nativeDisplay, void 
 
   OFArray *retArr = [OFArray arrayWithArray:displays];
   [displays release];
-  return [retArr autorelease];
+  return retArr;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------

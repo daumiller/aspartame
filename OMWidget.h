@@ -19,6 +19,8 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <ObjFW/ObjFW.h>
 #import <atropine/OMRectangle.h>
+@class OMDisplay;
+@class OMScreen;
 
 //==================================================================================================================================
 // Enumerations (castable)
@@ -35,8 +37,8 @@ typedef enum
 //----------------------------------------------------------------------------------------------------------------------------------
 typedef enum
 {
-  OMWIDGET_CLASS_VISIBLE,
-  OMWIDGET_CLASS_INVISIBLE
+  OMWIDGET_CLASS_INPUT_OUTPUT,
+  OMWIDGET_CLASS_INPUT_ONLY
 } OMWidgetClass;
 //----------------------------------------------------------------------------------------------------------------------------------
 typedef enum
@@ -59,16 +61,16 @@ typedef enum
 //----------------------------------------------------------------------------------------------------------------------------------
 typedef enum
 {
-  OMWIDGET_HINT_POSITION  = 1<<0,
-  OMWIDGET_HINT_SIZEMINE  = 1<<1,
-  OMWIDGET_HINT_SIZEMAX   = 1<<2,
-  OMWIDGET_HINT_SIZEBASE  = 1<<3,
-  OMWIDGET_HINT_ASPECT    = 1<<4,
-  OMWIDGET_HINT_INCREMENT = 1<<5,
-  OMWIDGET_HINT_GRAVITY   = 1<<6,
-  OMWIDGET_HINT_USERPOS   = 1<<7,
-  OMWIDGET_HINT_USERSIZE  = 1<<8
-} OMWidgetHint;
+  OMWIDGET_STATE_NORMAL     =    0,
+  OMWIDGET_STATE_HIDDEN     = 1<<0,
+  OMWIDGET_STATE_MINIMIZED  = 1<<1,
+  OMWIDGET_STATE_MAXIMIZED  = 1<<2,
+  OMWIDGET_STATE_STICKY     = 1<<3,
+  OMWIDGET_STATE_FULLSCREEN = 1<<4,
+  OMWIDGET_STATE_TOP        = 1<<5,
+  OMWIDGET_STATE_BOTTOM     = 1<<6,
+  OMWIDGET_STATE_FOCUSED    = 1<<7
+} OMWidgetState;
 //----------------------------------------------------------------------------------------------------------------------------------
 typedef enum
 {
@@ -98,20 +100,6 @@ typedef enum
 //----------------------------------------------------------------------------------------------------------------------------------
 typedef enum
 {
-  OMWIDGET_STATE_NORMAL     =    0,
-  OMWIDGET_STATE_HIDDEN     = 1<<0,
-  OMWIDGET_STATE_MINIMIZED  = 1<<1,
-  OMWIDGET_STATE_MAXIMIZED  = 1<<2,
-  OMWIDGET_STATE_STICKY     = 1<<3,
-  OMWIDGET_STATE_FULLSCREEN = 1<<4,
-  OMWIDGET_STATE_TOP        = 1<<5,
-  OMWIDGET_STATE_BOTTOM     = 1<<6,
-  OMWIDGET_STATE_FOCUSED    = 1<<7
-
-} OMWidgetState;
-//----------------------------------------------------------------------------------------------------------------------------------
-typedef enum
-{
   OMWIDGET_EVENT_NONE                   = 1<< 0,
   OMWIDGET_EVENT_EXPOSED                = 1<< 1,
   OMWIDGET_EVENT_POINTER_MOTION         = 1<< 2,
@@ -135,59 +123,89 @@ typedef enum
   OMWIDGET_EVENT_CHILD_STRUCTURE        = 1<<20,
   OMWIDGET_EVENT_SCROLL                 = 1<<21,
   OMWIDGET_EVENT_TOUCH                  = 1<<22,
-  OMWIDGET_EVENT_SMOOTH_SCROLL          = 1<<23,
+  OMWIDGET_EVENT_SCROLL_SMOOTH          = 1<<23,
   OMWIDGET_EVENT_ALL                    = 0xFFFFFFFE
 } OMWidgetEvent;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef enum
+{
+  OMWIDGET_GEOMETRY_POSITION        = 1<<0,
+  OMWIDGET_GEOMETRY_SIZE_MIN        = 1<<1,
+  OMWIDGET_GEOMETRY_SIZE_MAX        = 1<<2,
+  OMWIDGET_GEOMETRY_SIZE_BASE       = 1<<3,
+  OMWIDGET_GEOMETRY_ASPECT          = 1<<4,
+  OMWIDGET_GEOMETRY_INCREMENT       = 1<<5,
+  OMWIDGET_GEOMETRY_GRAVITY         = 1<<6,
+  OMWIDGET_GEOMETRY_USER_POSITIONED = 1<<7,
+  OMWIDGET_GEOMETRY_USER_SIZED      = 1<<8
+} OMWidgetGeometryFlags;
 
 //==================================================================================================================================
 // Structures (non-castable)
 //==================================================================================================================================
 typedef struct
 {
-  int  widthMin,  widthMax,  widthBase,  widthIncrement;
-  int heightMin, heightMax, heightBase, heightIncrement;
+  int x, y;
+  int    widthMin,  widthMax,  widthBase,  widthInc;
+  int   heightMin, heightMax, heightBase, heightInc;
   float aspectMin, aspectMax;
-  OMWidgetGravity gravity;
+  OMWidgetGravity       gravity;
+  OMWidgetGeometryFlags flags;
 } OMWidgetGeometry;
 
 //==================================================================================================================================
 @interface OMWidget : OFObject
 {
-  void *_gdkWindow;
+  void            *_gdkWindow;
+  OFString        *_title;     //gdk won't retrieve titles, so we'll store them
+  OMWidgetGeometry _geometry;
+  OMWidgetType     _type;      //cache this (for x/y/width/height)
+  float            _opacity;   //only provides writing
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 @property (readonly) void *gdkWindow;
-@property (retain  ) OFString       *title;
-@property (assign  ) int             eventMask;
-@property (assign  ) int             x;
-@property (assign  ) int             y;
-@property (assign  ) int             width;
-@property (assign  ) int             height;
-@property (assign  ) OMWidgetType    type;
-@property (assign  ) OMWidgetClass   class;
-@property (assign  ) OMWidgetStyle   style;
-@property (assign  ) OMWidgetHint    hint;
-@property (assign  ) OMWidgetGravity gravity;
-@property (assign  ) OMWidgetEdge    edge;
-//@property (readonly) OMVisual *visual;
-//@property (assign  ) OMWidget *parent;
-@property (assign  ) OMWidgetState   state;
-@property (assign  ) float           opacity;
-@property (assign  ) BOOL            isVisible;
-@property (readonly) BOOL            isDestroyed;
-@property (assign  ) BOOL            isComposited;
+@property (retain  ) OFString        *title;
+@property (assign  ) int              x;
+@property (assign  ) int              y;
+@property (assign  ) int              width;
+@property (assign  ) int              height;
+@property (assign  ) OMWidgetGeometry geometry;
+@property (assign  ) OMWidgetEvent    eventMask;
+@property (readonly) OMWidgetType     type;
+@property (assign  ) OMWidgetStyle    style;
+@property (assign  ) OMWidgetState    state;
+@property (assign  ) OMWidget        *parent;
+@property (assign  ) void            *nativeParent;
+//@property (retain  ) OMCursor        *cursor;
+@property (assign  ) float            opacity;
+@property (assign  ) BOOL             isVisible;
+@property (readonly) BOOL             isDestroyed;
+@property (assign  ) BOOL             isComposited;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 + widgetWithNativeWindow:(void *)gdkWindow;
 - initWithNativeWindow:(void *)gdkWindow;
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
++ (OMWidget *)nativeToWrapper:(void *)gdkWindow;
 - (void)destroyNativeWindow;
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-- (OMWidget *)nativeToWrapper:(void *)gdkWindow;
++ widgetWithParent  :(OMWidget *)parent title:(OFString *)title x:(int)x y:(int)y width:(int)width height:(int)height style:(OMWidgetStyle)style;
++ widgetWithNativeParent:(void *)parent title:(OFString *)title x:(int)x y:(int)y width:(int)width height:(int)height style:(OMWidgetStyle)style;
++ widgetWithParent  :(OMWidget *)parent title:(OFString *)title events:(OMWidgetEvent)events x:(int)x y:(int)y width:(int)width height:(int)height class:(OMWidgetClass)class type:(OMWidgetType)type style:(OMWidgetStyle)style visual:(OMVisual *)visual;
++ widgetWithNativeParent:(void *)parent title:(OFString *)title events:(OMWidgetEvent)events x:(int)x y:(int)y width:(int)width height:(int)height class:(OMWidgetClass)class type:(OMWidgetType)type style:(OMWidgetStyle)style visual:(OMVisual *)visual;
+
+- initWithParent  :(OMWidget *)parent title:(OFString *)title x:(int)x y:(int)y width:(int)width height:(int)height style:(OMWidgetStyle)style;
+- initWithNativeParent:(void *)parent title:(OFString *)title x:(int)x y:(int)y width:(int)width height:(int)height style:(OMWidgetStyle)style;
+- initWithParent  :(OMWidget *)parent title:(OFString *)title events:(OMWidgetEvent)events x:(int)x y:(int)y width:(int)width height:(int)height class:(OMWidgetClass)class type:(OMWidgetType)type style:(OMWidgetStyle)style visual:(OMVisual *)visual;
+- initWithNativeParent:(void *)parent title:(OFString *)title events:(OMWidgetEvent)events x:(int)x y:(int)y width:(int)width height:(int)height class:(OMWidgetClass)class type:(OMWidgetType)type style:(OMWidgetStyle)style visual:(OMVisual *)visual;
+
+-(void)setupWithParent:(void *)parent title:(OFString *)title events:(OMWidgetEvent)events x:(int)x y:(int)y width:(int)width height:(int)height class:(OMWidgetClass)class type:(OMWidgetType)type style:(OMWidgetStyle)style visual:(OMVisual *)visual isExtended:(BOOL)extended isNative:(BOOL)native;
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 //----------------------------------------------------------------------------------------------------------------------------------
 -(OMDisplay *)getDisplay;
 -(OMScreen *)getScreen;
-//-(OMVisual *)getVisual;
+-(OMVisual *)getVisual;
 -(void *)getNativeDisplay;
 -(void *)getNativeScreen;
 -(void *)getNativeVisual;
@@ -199,8 +217,13 @@ typedef struct
 -(void)focus;
 -(void)reorderRelativeTo:(OMWidget *)sibling above:(BOOL)above;
 //----------------------------------------------------------------------------------------------------------------------------------
--(void)setDimensionsX:(int)x Y:(int)y Width:(int)width Height:(int)height;
--(void)setDimensions:(OMDimension)dimensions;
+-(void)moveX:(int)x Y:(int)y;
+-(void)                         resizeWidth:(int)width Height:(int)height;
+-(void)moveX:(int)x Y:(int)y andResizeWidth:(int)width Height:(int)height;
+-(void)setOrigin   :(OMCoordinate)pos;
+-(void)setSize     :(OMSize)size;
+-(void)setOrigin   :(OMCoordinate)pos andSize:(OMSize)size;
+-(void)setDimension:(OMDimension)dimension;
 //-(void)beginPointerResize
 //-(void)beginPointerMove
 //-(void)beginDeviceResize
@@ -208,6 +231,10 @@ typedef struct
 //----------------------------------------------------------------------------------------------------------------------------------
 -(void)registerDropTarget;
 -(void)scrollX:(int)x Y:(int)y;
+-(void)showInTaskbar:(BOOL)taskbar;
+-(void)showInPager:(BOOL)pager;
+-(void)showUrgency:(BOOL)urgency;
+-(void)setAppWindow:(OMWidget *)appWindow;
 -(void)flush;
 
 //----------------------------------------------------------------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 //==================================================================================================================================
-// OMScreen.h
+// OMVisual.h
 /*==================================================================================================================================
 Copyright © 2012 Dillon Aumiller <dillonaumiller@gmail.com>
 
@@ -18,54 +18,67 @@ You should have received a copy of the GNU General Public License
 along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <ObjFW/ObjFW.h>
-#import <atropine/OMRectangle.h>
 @class OMScreen;
-@class OMSignalManager;
-@class OMWidget;
-@class OMVisual;
 
 //==================================================================================================================================
-@protocol OMScreenDelegate <OFObject>
-@optional
--(void)screenCompositedChanged:(OMScreen *)screen;
--(void)screenMonitorsChanged  :(OMScreen *)screen;
--(void)screenDimensionsChanged:(OMScreen *)screen;
-@end
-
-//==================================================================================================================================
-@interface OMScreen : OFObject
+typedef enum
 {
-  void                *_gdkScreen;
-  id<OMScreenDelegate> _delegate;
-  OMSignalManager     *_signalManager;
+  OMVISUAL_TYPE_GRAYSCALE,
+  OMVISUAL_TYPE_PALETTE_GRAYSCALE,
+  OMVISUAL_TYPE_PALETTE_STATIC,
+  OMVISUAL_TYPE_PALETTE,
+  OMVISUAL_TYPE_RGB,
+  OMVISUAL_TYPE_RGB_PROFILE
+} OMVisualType;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef enum
+{
+  OMVISUAL_ORDER_LSBYTE,
+  OMVISUAL_ORDER_MSBYTE
+} OMVisualByteOrder;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef struct
+{
+  unsigned int mask;
+           int shift;
+           int precision;
+} OMVisualComponent;
+
+//==================================================================================================================================
+@interface OMVisual : OFObject
+{
+  void *_gdkVisual;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-@property (readonly) void *gdkScreen;
-@property (readonly) int   screenIndex;
-@property (readonly) int   width;
-@property (readonly) int   height;
-@property (readonly) int   mmWidth;
-@property (readonly) int   mmHeight;
-@property (readonly) int   monitorCount;
-@property (readonly) int   primaryMonitor;
-@property (readonly) BOOL  isComposited;
-@property (retain  ) id<OMScreenDelegate> delegate;
+@property (readonly) void             *gdkVisual;
+@property (readonly) void             *gdkScreen;
+@property (readonly) OMVisualType      type;
+@property (readonly) int               depth;
+@property (readonly) OMVisualByteOrder byteOrder;
+@property (readonly) OMVisualComponent redBits;
+@property (readonly) OMVisualComponent greenBits;
+@property (readonly) OMVisualComponent blueBits;
 
 //----------------------------------------------------------------------------------------------------------------------------------
-+ screenWithNativeScreen:(void *)gdkScreen;
-- initWithNativeScreen:(void *)gdkScreen;
++ visualWithNativeVisual:(void *)gdkVisual;
+- initWithNativeVisual  :(void *)gdkVisual;
 
 //----------------------------------------------------------------------------------------------------------------------------------
--(OMDimension)monitorGeometry:(int)monitorIndex;  //monitor coordinates relative to screen
--(OMDimension)monitorWorkspace:(int)monitorIndex; //monitor coordinates relative to screen, minus system panels/areas
--(int)monitorAtPoint:(OMCoordinate)point;
++ (OFArray *)listDefaultDepths;
++ (OFArray *)listDefaultVisualTypes;
++ (OFArray *)listDefaultVisuals;
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
++ (OMVisualType)bestVisualType;
++ (int)         bestVisualDepth;
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
++ (OMVisual *)getSystemVisual;
++ (OMVisual *)getBestVisual;
++ (OMVisual *)getBestVisualWithDepth:(int)depth;
++ (OMVisual *)getBestVisualWithType:(OMVisualType)type;
++ (OMVisual *)getBetsVisualWithType:(OMVisualType)type andDepth:(int)depth;
 
--(OMWidget *)getRootWindow;
--(OFArray *)listTopLevelWindows;
-
--(OFArray *)listVisuals;
--(OMVisual *)getSystemVisual;
--(OMVisual *)getRGBAVisual;
+//----------------------------------------------------------------------------------------------------------------------------------
+- (OMScreen *)getScreen;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 @end
