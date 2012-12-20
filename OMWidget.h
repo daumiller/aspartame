@@ -19,8 +19,10 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <ObjFW/ObjFW.h>
 #import <atropine/OMRectangle.h>
+#import "OMEvent.h"
 @class OMDisplay;
 @class OMScreen;
+@class OMVisual;
 
 //==================================================================================================================================
 // Enumerations (castable)
@@ -237,6 +239,8 @@ typedef struct
 -(void)showUrgency:(BOOL)urgency;
 -(void)setAppWindow:(OMWidget *)appWindow;
 -(void)flush;
+//----------------------------------------------------------------------------------------------------------------------------------
+-(void)eventHandler:(OMEventType)type data:(void *)data;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 @end

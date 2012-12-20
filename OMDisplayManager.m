@@ -17,9 +17,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
-#import "OMDisplayManager.h"
-#import "OMSignalManager.h"
-#import "OMDisplay.h"
+#import <atropine/atropine.h>
+#import <aspartame/aspartame.h>
+#import <aspartame/OMSignalManager.h>
 #include <gdk/gdk.h>
 
 //==================================================================================================================================

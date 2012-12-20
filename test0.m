@@ -1,8 +1,9 @@
 #import "aspartame.h"
 
-@interface TestApp : OFObject <OMApplicationDelegate>
+@interface TestApp : OFObject <OMApplicationDelegate, OMWindowDelegate>
 -(void) applicationDidFinishLaunching;
 -(void) applicationWillTerminate;
+-(BOOL) windowShouldClose:(OMWindow *)window;
 @end
 
 @implementation TestApp
@@ -10,14 +11,17 @@
 {
   self = [super init];
 
-  OMWidget *wnd = [OMWidget widgetWithParent:NULL title:@"Hello アスパルテーム!" x:32 y:32 width:960 height:640 style:OMWIDGET_STYLE_NORMAL];
+  OMWindow *wnd = [OMWindow windowWithTitle:@"Hello アスパルテーム!" x:32 y:32 width:960 height:640];
   [wnd retain];
   [wnd show];
+  wnd.delegate = self;
+  wnd.quitOnClose = YES;
 
   return self;
 }
-- (void) applicationDidFinishLaunching { printf("applicationDidFinishLaunching!!\n"); }
-- (void) applicationWillTerminate      { printf("applicationWillTerminate\n");        }
+-(void) applicationDidFinishLaunching { printf("applicationDidFinishLaunching!!\n"); }
+-(void) applicationWillTerminate      { printf("applicationWillTerminate\n");        }
+-(BOOL) windowShouldClose:(OMWindow *)window { printf("windowShouldClose\n"); return YES; }
 @end
 
 int main(int argc, char **argv)

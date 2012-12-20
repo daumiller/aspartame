@@ -17,12 +17,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
+#import "OMEvent.h"
 #import "OMApplication.h"
 #import "OMScreen.h"
 #import "OMDisplay.h"
 #import "OMDisplayManager.h"
 #import "OMVisual.h"
 #import "OMWidget.h"
+#import "OMWindow.h"
 //----------------------------------------------------------------------------------------------------------------------------------
 #define ASPARTAME_NATIVE_LOOKUP_STRING "aspartame-object"
 

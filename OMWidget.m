@@ -17,7 +17,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
-#import "aspartame.h"
+#import <atropine/atropine.h>
+#import <aspartame/aspartame.h>
+#import <aspartame/OMSignalManager.h>
 #import <gdk/gdk.h>
 
 //==================================================================================================================================
@@ -152,6 +154,8 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
   _geometry.flags     |= OMWIDGET_GEOMETRY_POSITION | OMWIDGET_GEOMETRY_SIZE_BASE;
   _opacity             = 1.0f;
 
+  g_object_set_data(_gdkWindow, ASPARTAME_NATIVE_LOOKUP_STRING, self);
+
   [pool drain];
 }
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -159,6 +163,14 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 {
   [_title release];
   [super dealloc];
+}
+
+//==================================================================================================================================
+// Event Handler
+//==================================================================================================================================
+-(void)eventHandler:(OMEventType)type data:(void *)data
+{
+  //nada
 }
 
 //==================================================================================================================================
