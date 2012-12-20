@@ -19,7 +19,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <ObjFW/ObjFW.h>
 #import <atropine/OMRectangle.h>
-#import "OMEvent.h"
+#import <aspartame/OMEvent.h>
 @class OMDisplay;
 @class OMScreen;
 @class OMVisual;

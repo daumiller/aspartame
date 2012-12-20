@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <ObjFW/ObjFW.h>
+#import <atropine/OMRectangle.h>
+@class OMWidget;
 
 //==================================================================================================================================
 // Enumerations
@@ -57,7 +59,7 @@ typedef enum
   OMEVENT_VISIBILITY_CHANGE       =  29, // 
   //OMVENT_                       =  30,
   OMEVENT_SCROLL                  =  31, // 
-  OMEVENT_WINDOW_STATE            =  32, // state changed
+  OMEVENT_STATE_CHANGE            =  32, // state changed
   OMEVENT_SETTING                 =  33, // 
   OMEVENT_OWNER_CHANGE            =  34, // window content has changed (huh?)
   OMEVENT_GRAB_BROKEN             =  35, // 
@@ -65,14 +67,133 @@ typedef enum
   OMEVENT_TOUCH_BEGIN             =  37, // 
   OMEVENT_TOUCH_UPDATE            =  38, // 
   OMEVENT_TOUCH_END               =  39, // 
-  OMEVENT_TOUCH_CANCEL            =  40, // 
-  OMEVENT_LAST
+  OMEVENT_TOUCH_CANCEL            =  40  // 
 } OMEventType;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef enum
+{
+  OMMODIFIER_SHIFT   = 1<< 0,
+  OMMODIFIER_LOCK    = 1<< 1, //CapsLock/ShiftLock
+  OMMODIFIER_CONTROL = 1<< 2,
+  OMMODIFIER_MOD1    = 1<< 3, //usually Alternate
+  OMMODIFIER_MOD2    = 1<< 4,
+  OMMODIFIER_MOD3    = 1<< 5,
+  OMMODIFIER_MOD4    = 1<< 6,
+  OMMODIFIER_MOD5    = 1<< 7,
+  OMMODIFIER_BUTTON1 = 1<< 8,
+  OMMODIFIER_BUTTON2 = 1<< 9,
+  OMMODIFIER_BUTTON3 = 1<<10,
+  OMMODIFIER_BUTTON4 = 1<<11,
+  OMMODIFIER_BUTTON5 = 1<<12,
+  OMMODIFIER_SUPER   = 1<<26,
+  OMMODIFIER_HYPER   = 1<<27,
+  OMMODIFIER_META    = 1<<28,
+  OMMODIFIER_RELEASE = 1<<30
+} OMEventModifier;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef enum
+{
+  OMSCROLL_UP,
+  OMSCROLL_DOWN,
+  OMSCROLL_LEFT,
+  OMSCROLL_RIGHT,
+  OMSCROLL_SMOOTH
+} OMScrollDirection;
 
 //==================================================================================================================================
 // Structures
 //==================================================================================================================================
-
+typedef struct
+{
+  unsigned int    timestamp;
+  OMEventModifier modifiers;
+  unsigned int    keycode;
+  unsigned short  keycodeRaw;
+  BOOL            isModifier;
+} OMEventKey;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef struct
+{
+  unsigned int    timestamp;
+  OMEventModifier modifiers;
+  int             button;
+  float           x, y;
+  float           rootX, rootY;
+  //float deviceX, deviceY;
+  //OMDevice *device;
+} OMEventButton;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef struct
+{
+  unsigned int    timestamp;
+  OMEventModifier modifiers;
+  BOOL            isPointer;
+  void           *sequenceId;
+  float           x, y;
+  float           rootX, rootY;
+  //float           deviceX, deviceY;
+  //OMDevice       *device;
+} OMEventTouch;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef struct
+{
+  unsigned int      timestamp;
+  OMEventModifier   modifiers;
+  OMScrollDirection direction;
+  float             x, y;
+  float             rootX, rootY;
+  float             deltaX, deltaY;
+  //OMDevice         *device
+} OMEventScroll;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef struct
+{
+  unsigned int    timestamp;
+  OMEventModifier modifiers;
+  float           x, y;
+  float           rootX, rootY;
+  BOOL            isFeed;
+  //OMDevice       *device;
+} OMEventPointer;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef struct
+{
+  OMRectangle area;
+  int         backlog;
+} OMEventExpose;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef struct
+{
+  unsigned int    timestamp;
+  OMEventModifier modifiers;
+  OMWidget       *other;
+  void           *otherNative;
+  float           x, y;
+  float          rootX, rootY;
+} OMEventEnterLeave;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef struct
+{
+  int changeMask;
+  int newState;
+} OMEventState;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef struct
+{
+  //not sure what's going on here yet... is this X specific?
+  unsigned int timestamp;
+  void *requestor;
+  void *selection;
+  void *target;
+  void *property;
+} OMEventSelection;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef struct
+{
+  unsigned int timestamp;
+  float        rootX, rootY;
+  //OMDragDrop   *context;
+} OMEventDragDrop;
 
 //==================================================================================================================================
 //----------------------------------------------------------------------------------------------------------------------------------
