@@ -146,7 +146,8 @@ static void aspartame_event_handler(GdkEvent *e, gpointer crap)
     case OMEVENT_FOCUS_CHANGE:
     {
       GdkEventFocus *gdk = (GdkEventFocus *)e;
-      [widget eventHandler:eventType data:(void *)(int)gdk->in];
+      BOOL gotFocus = (BOOL)gdk->in;
+      [widget eventHandler:eventType data:&gotFocus];
     }
     break;
 
