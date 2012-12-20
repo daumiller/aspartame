@@ -109,7 +109,7 @@ static void aspartame_event_handler(GdkEvent *e, gpointer crap)
   gdk_event_handler_set(aspartame_event_handler, NULL, NULL);
   
   delegate = [[cls alloc] init];
-  if([delegate methodForSelector:@selector(applicationDidFinishLaunching)] != [OFObject instanceMethodForSelector:@selector(applicationDidFinishLaunching)])
+  if([delegate respondsToSelector:@selector(applicationDidFinishLaunching)])
     [delegate applicationDidFinishLaunching];
   
   g_main_loop_run(mainloop);
