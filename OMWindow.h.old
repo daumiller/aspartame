@@ -1,5 +1,5 @@
 //==================================================================================================================================
-// OMWidget.h
+// OMWindow.h
 /*==================================================================================================================================
 Copyright © 2012 Dillon Aumiller <dillonaumiller@gmail.com>
 
@@ -18,25 +18,30 @@ You should have received a copy of the GNU General Public License
 along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <ObjFW/ObjFW.h>
-#import <atropine/OMRectangle.h>
-@class OMWidget;
-@class OMSurface;
+@class OFWidget;
+@class OMWindow;
 
 //==================================================================================================================================
-@protocol OMWidgetContainer <OFObject>
+@protocol OMWindowDelegate <OFObject>
+@optional
+-(BOOL)windowShouldClose:(OMWindow *)window;
+-(void)windowWillClose:(OMWindow *)window;
+@end
+
+//==================================================================================================================================
+@interface OMWindow : OMWidget
+{
+  OFObject <OMWindowDelegate> *_delegate;
+  BOOL _quitOnClose;
+}
 //----------------------------------------------------------------------------------------------------------------------------------
--(OFArray *)children;
-//childAdd/childRemove/...
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--(void)invalidate;
--(void)invalidateDimension:(OMDimension)dimension;
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--(void)drawDimension:(OMDimension)dimension toSurface:(OMSurface *)surface;
--(void)drawBackgroundDimension:(OMDimension)dimension toSurface:(OMSurface *)surface;
--(void)drawChildrenDimension:(OMDimension)dimension toSurface:(OMSurface *)surface;
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--(void *)handleEvent:(OMEventType)type withData:(void *)data;
+@property (retain) OFObject <OMWindowDelegate> *delegate;
+@property (assign) BOOL quitOnClose;
 //----------------------------------------------------------------------------------------------------------------------------------
++ windowWithTitle:(OFString *)title x:(int)x y:(int)y width:(int)width height:(int)height;
+- initWithTitle:(OFString *)title x:(int)x y:(int)y width:(int)width height:(int)height;
+
+//==================================================================================================================================
 @end
 
 //==================================================================================================================================

@@ -18,7 +18,7 @@ libatropine.so : ../atropine/libatropine.so
 	cp ../atropine/libatropine.so ./
 
 # ----- objects -----
-objects : OMSignalManager.o OMDisplayManager.o OMDisplay.o OMScreen.o OMVisual.o OMWidget.o OMApplication.o OMWindow.o OMButton.o
+objects : OMSignalManager.o OMDisplayManager.o OMDisplay.o OMScreen.o OMVisual.o OMApplication.o OMWindow.o OMWidget.o
 
 %.o : %.m
 	clang -c $^ -o $@ -I.. `objfw-config --cflags` `pkg-config --cflags gdk-3.0`

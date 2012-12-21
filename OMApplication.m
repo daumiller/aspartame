@@ -88,8 +88,8 @@ static void aspartame_event_handler(GdkEvent *e, gpointer crap)
   GdkEventAny *eAny = (GdkEventAny *)e;
   if(eAny->window == NULL) return;
   
-  OMWidget *widget = [OMWidget nativeToWrapper:eAny->window];
-  if(widget == nil) return;
+  OMWindow *window = [OMWindow nativeToWrapper:eAny->window];
+  if(window == nil) return;
   OMEventType eventType = (OMEventType)(eAny->type);
 
   void *eventData;
@@ -98,8 +98,8 @@ static void aspartame_event_handler(GdkEvent *e, gpointer crap)
     case OMEVENT_EXPOSE:
     {
       OMEventExpose expose = translateEvent_expose(e);
-      expose.surface = [[OMNativeSurface alloc] initWithData:eAny->window width:widget.width height:widget.height];
-      [widget eventHandler:eventType data:&expose];
+      expose.surface = [[OMNativeSurface alloc] initWithData:eAny->window width:window.width height:window.height];
+      [window eventHandler:eventType data:&expose];
       [expose.surface release];
     }
     break;
@@ -108,7 +108,7 @@ static void aspartame_event_handler(GdkEvent *e, gpointer crap)
     case OMEVENT_KEY_RELEASE:
     {
       OMEventKey key = translateEvent_key(e);
-      [widget eventHandler:eventType data:&key];
+      [window eventHandler:eventType data:&key];
     }
     break;
 
@@ -118,7 +118,7 @@ static void aspartame_event_handler(GdkEvent *e, gpointer crap)
     case OMEVENT_POINTER_BUTTON_RELEASE:
     {
       OMEventButton button = translateEvent_button(e);
-      [widget eventHandler:eventType data:&button];
+      [window eventHandler:eventType data:&button];
     }
     break;
 
@@ -128,13 +128,13 @@ static void aspartame_event_handler(GdkEvent *e, gpointer crap)
     case OMEVENT_TOUCH_CANCEL:
     {
       OMEventTouch touch = translateEvent_touch(e);
-      [widget eventHandler:eventType data:&touch];
+      [window eventHandler:eventType data:&touch];
     }
 
     case OMEVENT_POINTER_MOTION:
     {
       OMEventPointer pointer = translateEvent_pointer(e);
-      [widget eventHandler:eventType data:&pointer];
+      [window eventHandler:eventType data:&pointer];
     }
     break;
 
@@ -142,7 +142,7 @@ static void aspartame_event_handler(GdkEvent *e, gpointer crap)
     case OMEVENT_POINTER_LEAVE:
     {
       OMEventEnterLeave enterLeave = translateEvent_enterLeave(e);
-      [widget eventHandler:eventType data:&enterLeave];
+      [window eventHandler:eventType data:&enterLeave];
     }
     break;
 
@@ -150,7 +150,7 @@ static void aspartame_event_handler(GdkEvent *e, gpointer crap)
     {
       GdkEventFocus *gdk = (GdkEventFocus *)e;
       BOOL gotFocus = (BOOL)gdk->in;
-      [widget eventHandler:eventType data:&gotFocus];
+      [window eventHandler:eventType data:&gotFocus];
     }
     break;
 
@@ -158,21 +158,21 @@ static void aspartame_event_handler(GdkEvent *e, gpointer crap)
     {
       GdkEventConfigure *gdk = (GdkEventConfigure *)e;
       OMRectangle rectangle = OMMakeRectangleFloats((float)gdk->x, (float)gdk->y, (float)gdk->width, (float)gdk->height);
-      [widget eventHandler:eventType data:&rectangle];
+      [window eventHandler:eventType data:&rectangle];
     }
     break;
 
     case OMEVENT_SCROLL:
     {
       OMEventScroll scroll = translateEvent_scroll(e);
-      [widget eventHandler:eventType data:&scroll];
+      [window eventHandler:eventType data:&scroll];
     }
     break;
 
     case OMEVENT_STATE_CHANGE:
     {
       OMEventState state = translateEvent_state(e);
-      [widget eventHandler:eventType data:&state];
+      [window eventHandler:eventType data:&state];
     }
     break;
 
@@ -181,7 +181,7 @@ static void aspartame_event_handler(GdkEvent *e, gpointer crap)
     case OMEVENT_SELECTION_NOTIFY:
     {
       OMEventSelection selection = translateEvent_selection(e);
-      [widget eventHandler:eventType data:&selection];
+      [window eventHandler:eventType data:&selection];
     }
     break;
  
@@ -193,7 +193,7 @@ static void aspartame_event_handler(GdkEvent *e, gpointer crap)
     case OMEVENT_DROP_FINISHED:
     {
       OMEventDragDrop dragDrop = translateEvent_dragDrop(e);
-      [widget eventHandler:eventType data:&dragDrop];
+      [window eventHandler:eventType data:&dragDrop];
     }
     break;
 
@@ -211,7 +211,7 @@ static void aspartame_event_handler(GdkEvent *e, gpointer crap)
     case OMEVENT_UNMAP:
     case OMEVENT_VISIBILITY_CHANGE:
     case OMEVENT_PROPERTY_CHANGE:
-      [widget eventHandler:eventType data:NULL];
+      [window eventHandler:eventType data:NULL];
     break;
   }
 }
@@ -309,7 +309,7 @@ OMEventEnterLeave translateEvent_enterLeave(GdkEvent *e)
   om.timestamp = gdk->time;
   om.modifiers = gdk->state;
   om.otherNative = gdk->subwindow;
-  om.other       = (om.otherNative == NULL) ? nil : [OMWidget nativeToWrapper:om.otherNative];
+  om.other       = (om.otherNative == NULL) ? nil : [OMWindow nativeToWrapper:om.otherNative];
   om.x           = (float)gdk->x;
   om.y           = (float)gdk->y;
   om.rootX       = (float)gdk->x_root;

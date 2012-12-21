@@ -13,9 +13,9 @@
   self = [super init];
 
   OMWindow *wnd = [OMWindow windowWithTitle:@"Hello アスパルテーム!" x:32 y:32 width:960 height:640];
-  OMButton *btn = [OMButton buttonWithParent:wnd x:32 y:32 width:128 height:32];
+  //OMButton *btn = [OMButton buttonWithParent:wnd x:32 y:32 width:128 height:32];
 
-  [btn retain]; [btn show]; btn.delegate = self;
+  //[btn retain]; [btn show]; btn.delegate = self;
   [wnd retain]; [wnd show]; wnd.delegate = self;
   wnd.quitOnClose = YES;
 
@@ -32,6 +32,8 @@ int main(int argc, char **argv)
   [OMApplication runWithClass:[TestApp class]];
 }
 
+// Next Fork: GDK==Windows -> aspartame==Widgets
+// http://people.gnome.org/~federico/misc/gtk-drawing-model/index.html
 
 /*
 //http://www.gtkforums.com/viewtopic.php?t=3998
