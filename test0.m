@@ -1,9 +1,10 @@
 #import "aspartame.h"
 
-@interface TestApp : OFObject <OMApplicationDelegate, OMWindowDelegate>
+@interface TestApp : OFObject <OMApplicationDelegate, OMWindowDelegate, OMButtonDelegate>
 -(void) applicationDidFinishLaunching;
 -(void) applicationWillTerminate;
 -(BOOL) windowShouldClose:(OMWindow *)window;
+-(void) buttonPressed:(OMButton *)button;
 @end
 
 @implementation TestApp
@@ -12,9 +13,10 @@
   self = [super init];
 
   OMWindow *wnd = [OMWindow windowWithTitle:@"Hello アスパルテーム!" x:32 y:32 width:960 height:640];
-  [wnd retain];
-  [wnd show];
-  wnd.delegate = self;
+  OMButton *btn = [OMButton buttonWithParent:wnd x:32 y:32 width:128 height:32];
+
+  [btn retain]; [btn show]; btn.delegate = self;
+  [wnd retain]; [wnd show]; wnd.delegate = self;
   wnd.quitOnClose = YES;
 
   return self;
@@ -22,6 +24,7 @@
 -(void) applicationDidFinishLaunching { printf("applicationDidFinishLaunching!!\n"); }
 -(void) applicationWillTerminate      { printf("applicationWillTerminate\n");        }
 -(BOOL) windowShouldClose:(OMWindow *)window { printf("windowShouldClose\n"); return YES; }
+-(void) buttonPressed:(OMButton *)button { printf("Our button was pressed!\n"); }
 @end
 
 int main(int argc, char **argv)

@@ -160,7 +160,7 @@ typedef struct
 typedef struct
 {
   OMSurface  *surface;
-  OMRectangle area;
+  OMDimension area;
   int         backlog;
 } OMEventExpose;
 //----------------------------------------------------------------------------------------------------------------------------------

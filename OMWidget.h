@@ -163,8 +163,6 @@ typedef struct
   OMWidgetGeometry _geometry;
   OMWidgetType     _type;      //cache this (for x/y/width/height)
   float            _opacity;   //only provides writing
-  int              _width;
-  int              _height;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 @property (readonly) void *gdkWindow;
@@ -241,6 +239,12 @@ typedef struct
 -(void)showUrgency:(BOOL)urgency;
 -(void)setAppWindow:(OMWidget *)appWindow;
 -(void)flush;
+//----------------------------------------------------------------------------------------------------------------------------------
+-(void)invalidate;
+-(void)invalidateDimension:(OMDimension)dimension;
+-(void)invalidateDimensionX:(int)x Y:(int)y Width:(int)width Height:(int)height;
+-(void)forceRefresh;
+
 //----------------------------------------------------------------------------------------------------------------------------------
 -(void)eventHandler:(OMEventType)type data:(void *)data;
 

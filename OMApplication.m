@@ -86,6 +86,7 @@ static void atexit_handler(void)
 static void aspartame_event_handler(GdkEvent *e, gpointer crap)
 {
   GdkEventAny *eAny = (GdkEventAny *)e;
+  if(eAny->window == NULL) return;
   
   OMWidget *widget = [OMWidget nativeToWrapper:eAny->window];
   if(widget == nil) return;
@@ -296,7 +297,7 @@ OMEventExpose translateEvent_expose(GdkEvent *e)
   GdkEventExpose *gdk = (GdkEventExpose *)e;
   OMEventExpose om;
   om.surface = nil;
-  om.area    = OMMakeRectangleFloats((float)gdk->area.x, (float)gdk->area.y, (float)gdk->area.width, (float)gdk->area.height);
+  om.area    = OMMakeDimensionFloats((float)gdk->area.x, (float)gdk->area.y, (float)gdk->area.width, (float)gdk->area.height);
   om.backlog = gdk->count;
   return om;
 }

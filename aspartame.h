@@ -25,6 +25,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 #import "OMVisual.h"
 #import "OMWidget.h"
 #import "OMWindow.h"
+#import "OMButton.h"
 //----------------------------------------------------------------------------------------------------------------------------------
 #define ASPARTAME_NATIVE_LOOKUP_STRING "aspartame-object"
 

@@ -204,17 +204,15 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -(int)width
 {
-  if(_width > -1) return _width;
   if(_type != OMWIDGET_TYPE_WINDOW) return gdk_window_get_width(NATIVE_WINDOW);
-  gdk_window_get_geometry(NATIVE_WINDOW, NULL, NULL, &_width, NULL); return _width;
+  int w; gdk_window_get_geometry(NATIVE_WINDOW, NULL, NULL, &w, NULL); return w;
 }
 -(void)setWidth:(int)width { [self resizeWidth:width Height:self.height]; }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -(int)height
 {
-  if(_height > -1) return _height;
   if(_type != OMWIDGET_TYPE_WINDOW) return gdk_window_get_height(NATIVE_WINDOW);
-  gdk_window_get_geometry(NATIVE_WINDOW, NULL, NULL, NULL, &_height); return _height;
+  int h; gdk_window_get_geometry(NATIVE_WINDOW, NULL, NULL, NULL, &h); return h;
 }
 -(void)setHeight:(int)height { [self resizeWidth:self.width Height:height]; }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -280,10 +278,9 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 //----------------------------------------------------------------------------------------------------------------------------------
 -(OMWidget *)parent
 {
-  GdkWindow *gdkParent = gdk_window_get_parent(NATIVE_WINDOW);
-  OMWidget  *omParent = [OMWidget nativeToWrapper:gdkParent];
-  if(omParent) return omParent;
-  return [OMWidget widgetWithNativeWindow:gdkParent];
+  GdkWindow *gdkParent = gdk_window_get_parent(NATIVE_WINDOW); if(gdkParent == NULL) return nil;
+  OMWidget  *omParent = [OMWidget nativeToWrapper:gdkParent];  if(omParent  == NULL) return nil;
+  return omParent;
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -(void)setParent:(OMWidget *)parent
@@ -361,8 +358,8 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 -(void)resizeWidth:(int)width Height:(int)height
 {
   _geometry.flags |= OMWIDGET_GEOMETRY_SIZE_BASE;
-  _geometry.widthBase  = _width  = width;
-  _geometry.heightBase = _height = height;
+  _geometry.widthBase  = width;
+  _geometry.heightBase = height;
   gdk_window_resize(NATIVE_WINDOW, width, height);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -371,8 +368,8 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
   _geometry.flags |= OMWIDGET_GEOMETRY_POSITION | OMWIDGET_GEOMETRY_SIZE_BASE;
   _geometry.x = x;
   _geometry.y = y;
-  _geometry.widthBase  = _width  = width;
-  _geometry.heightBase = _height = height;
+  _geometry.widthBase  = width;
+  _geometry.heightBase = height;
   gdk_window_move_resize(NATIVE_WINDOW, x, y, width, height);
 }
 //----------------------------------------------------------------------------------------------------------------------------------
@@ -402,6 +399,36 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 -(void)showUrgency:(BOOL)urgency          { gdk_window_set_urgency_hint(NATIVE_WINDOW, urgency);              }
 -(void)setAppWindow:(OMWidget *)appWindow { gdk_window_set_transient_for(NATIVE_WINDOW, appWindow.gdkWindow); }
 -(void)flush                              { gdk_window_flush(NATIVE_WINDOW);                                  }
+//----------------------------------------------------------------------------------------------------------------------------------
+-(void)invalidate
+{
+  gdk_window_invalidate_rect(NATIVE_WINDOW, NULL, TRUE);
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-(void)invalidateDimension:(OMDimension)dimension
+{
+  GdkRectangle rc;
+  rc.x      = (int)dimension.origin.x;
+  rc.y      = (int)dimension.origin.y;
+  rc.width  = (int)dimension.size.width;
+  rc.height = (int)dimension.size.height;
+  gdk_window_invalidate_rect(NATIVE_WINDOW, &rc, TRUE);
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-(void)invalidateDimensionX:(int)x Y:(int)y Width:(int)width Height:(int)height
+{
+  GdkRectangle rc;
+  rc.x      = x;
+  rc.y      = y;
+  rc.width  = width;
+  rc.height = height;
+  gdk_window_invalidate_rect(NATIVE_WINDOW, &rc, TRUE);
+}
+//----------------------------------------------------------------------------------------------------------------------------------
+-(void)forceRefresh
+{
+  gdk_window_process_updates(NATIVE_WINDOW, TRUE);
+}
 
 //==================================================================================================================================
 @end

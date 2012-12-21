@@ -1,5 +1,5 @@
 //==================================================================================================================================
-// OMWindow.h
+// OMButton.h
 /*==================================================================================================================================
 Copyright © 2012 Dillon Aumiller <dillonaumiller@gmail.com>
 
@@ -18,28 +18,27 @@ You should have received a copy of the GNU General Public License
 along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <ObjFW/ObjFW.h>
-@class OFWidget;
-@class OMWindow;
+@class OMWidget;
+@class OMButton;
 
 //==================================================================================================================================
-@protocol OMWindowDelegate <OFObject>
+@protocol OMButtonDelegate <OFObject>
 @optional
--(BOOL)windowShouldClose:(OMWindow *)window;
--(void)windowWillClose:(OMWindow *)window;
+-(void)buttonPressed:(OMButton *)button;
 @end
 
 //==================================================================================================================================
-@interface OMWindow : OMWidget
+@interface OMButton : OMWidget
 {
-  OFObject <OMWindowDelegate> *_delegate;
-  BOOL _quitOnClose;
+  OFObject <OMButtonDelegate> *_delegate;
+  BOOL _isHovered;
+  BOOL _isPressed;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-@property (retain) OFObject <OMWindowDelegate> *delegate;
-@property (assign) BOOL quitOnClose;
+@property (retain) OFObject <OMButtonDelegate> *delegate;
 //----------------------------------------------------------------------------------------------------------------------------------
-+ windowWithTitle:(OFString *)title x:(int)x y:(int)y width:(int)width height:(int)height;
-- initWithTitle:(OFString *)title x:(int)x y:(int)y width:(int)width height:(int)height;
++ buttonWithParent:(OMWidget *)parent x:(int)x y:(int)y width:(int)width height:(int)height;
+- initWithParent:(OMWidget *)parent x:(int)x y:(int)y width:(int)width height:(int)height;
 
 //==================================================================================================================================
 @end
