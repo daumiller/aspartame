@@ -19,7 +19,6 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <atropine/atropine.h>
 #import <aspartame/aspartame.h>
-#import <aspartame/OMSignalManager.h>
 #import <gdk/gdk.h>
 
 //==================================================================================================================================
@@ -205,15 +204,17 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -(int)width
 {
+  if(_width > -1) return _width;
   if(_type != OMWIDGET_TYPE_WINDOW) return gdk_window_get_width(NATIVE_WINDOW);
-  int ret; gdk_window_get_geometry(NATIVE_WINDOW, NULL, NULL, &ret, NULL); return ret;
+  gdk_window_get_geometry(NATIVE_WINDOW, NULL, NULL, &_width, NULL); return _width;
 }
 -(void)setWidth:(int)width { [self resizeWidth:width Height:self.height]; }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -(int)height
 {
+  if(_height > -1) return _height;
   if(_type != OMWIDGET_TYPE_WINDOW) return gdk_window_get_height(NATIVE_WINDOW);
-  int ret; gdk_window_get_geometry(NATIVE_WINDOW, NULL, NULL, NULL, &ret); return ret;
+  gdk_window_get_geometry(NATIVE_WINDOW, NULL, NULL, NULL, &_height); return _height;
 }
 -(void)setHeight:(int)height { [self resizeWidth:self.width Height:height]; }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -321,6 +322,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -(BOOL)isComposited { return gdk_window_get_composited(NATIVE_WINDOW); }
 -(void)setIsComposited:(BOOL)isComposited { gdk_window_set_composited(NATIVE_WINDOW, isComposited); }
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 //==================================================================================================================================
 // Owning Display/Screen/Visual
@@ -359,8 +361,8 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 -(void)resizeWidth:(int)width Height:(int)height
 {
   _geometry.flags |= OMWIDGET_GEOMETRY_SIZE_BASE;
-  _geometry.widthBase  = width;
-  _geometry.heightBase = height;
+  _geometry.widthBase  = _width  = width;
+  _geometry.heightBase = _height = height;
   gdk_window_resize(NATIVE_WINDOW, width, height);
 }
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -369,8 +371,8 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
   _geometry.flags |= OMWIDGET_GEOMETRY_POSITION | OMWIDGET_GEOMETRY_SIZE_BASE;
   _geometry.x = x;
   _geometry.y = y;
-  _geometry.widthBase  = width;
-  _geometry.heightBase = height;
+  _geometry.widthBase  = _width  = width;
+  _geometry.heightBase = _height = height;
   gdk_window_move_resize(NATIVE_WINDOW, x, y, width, height);
 }
 //----------------------------------------------------------------------------------------------------------------------------------

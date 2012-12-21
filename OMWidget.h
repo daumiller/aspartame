@@ -163,6 +163,8 @@ typedef struct
   OMWidgetGeometry _geometry;
   OMWidgetType     _type;      //cache this (for x/y/width/height)
   float            _opacity;   //only provides writing
+  int              _width;
+  int              _height;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 @property (readonly) void *gdkWindow;

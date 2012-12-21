@@ -19,6 +19,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <atropine/atropine.h>
 #import <aspartame/aspartame.h>
+#import <gdk/gdk.h>
 //==================================================================================================================================
 
 //==================================================================================================================================
@@ -53,6 +54,16 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 {
   switch(type)
   {
+    case OMEVENT_EXPOSE:
+    {
+      OMEventExpose *expose = (OMEventExpose *)data;
+      OMSurface *g = expose->surface;
+      [g setColorR:1.0f G:1.0f B:1.0f];
+      [g rectangle:expose->area];
+      [g fill];
+    }
+    break;
+
     case OMEVENT_DELETE:
     {
       if([_delegate respondsToSelector:@selector(windowShouldClose:)])
@@ -70,8 +81,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
     }
     break;
 
-    default:
-    break;
+    default: return;
   }
 }
 

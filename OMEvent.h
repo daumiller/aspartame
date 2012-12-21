@@ -20,6 +20,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 #import <ObjFW/ObjFW.h>
 #import <atropine/OMRectangle.h>
 @class OMWidget;
+@class OMSurface;
 
 //==================================================================================================================================
 // Enumerations
@@ -158,6 +159,7 @@ typedef struct
 //----------------------------------------------------------------------------------------------------------------------------------
 typedef struct
 {
+  OMSurface  *surface;
   OMRectangle area;
   int         backlog;
 } OMEventExpose;

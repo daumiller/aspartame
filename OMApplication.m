@@ -97,7 +97,9 @@ static void aspartame_event_handler(GdkEvent *e, gpointer crap)
     case OMEVENT_EXPOSE:
     {
       OMEventExpose expose = translateEvent_expose(e);
+      expose.surface = [[OMNativeSurface alloc] initWithData:eAny->window width:widget.width height:widget.height];
       [widget eventHandler:eventType data:&expose];
+      [expose.surface release];
     }
     break;
 
@@ -293,7 +295,8 @@ OMEventExpose translateEvent_expose(GdkEvent *e)
 {
   GdkEventExpose *gdk = (GdkEventExpose *)e;
   OMEventExpose om;
-  om.area = OMMakeRectangleFloats((float)gdk->area.x, (float)gdk->area.y, (float)gdk->area.width, (float)gdk->area.height);
+  om.surface = nil;
+  om.area    = OMMakeRectangleFloats((float)gdk->area.x, (float)gdk->area.y, (float)gdk->area.width, (float)gdk->area.height);
   om.backlog = gdk->count;
   return om;
 }
