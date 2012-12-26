@@ -18,8 +18,9 @@ You should have received a copy of the GNU General Public License
 along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <ObjFW/ObjFW.h>
-#import <aspartame/OMWidget.h>
+#import <aspartame/OMWidgetContainer.h>
 #import <aspartame/OMEvent.h>
+@class OMWindow;
 @class OMDisplay;
 @class OMScreen;
 @class OMVisual;
@@ -137,6 +138,15 @@ typedef enum
 } OMWindowGeometryFlags;
 
 //==================================================================================================================================
+// Delegate
+//==================================================================================================================================
+@protocol OMWindowDelegate <OFObject>
+@optional
+-(BOOL)windowShouldClose:(OMWindow *)window;
+-(void)windowWillClose:(OMWindow *)window;
+@end
+
+//==================================================================================================================================
 // Structures (non-castable)
 //==================================================================================================================================
 typedef struct
@@ -152,30 +162,34 @@ typedef struct
 //==================================================================================================================================
 @interface OMWindow : OFObject <OMWidgetContainer>
 {
-  void            *_gdkWindow;
-  OFString        *_title;     //gdk won't retrieve titles, so we'll store them
-  OMWindowGeometry _geometry;
-  float            _opacity;   //only provides writing
-  OFArray         *_children;
+  void                        *_gdkWindow;
+  OFString                    *_title;     //gdk won't retrieve titles, so we'll store them
+  OMWindowGeometry             _geometry;
+  float                        _opacity;   //only provides writing
+  OFArray                     *_children;
+  OFObject <OMWindowDelegate> *_delegate;
+  BOOL                         _quitOnClose;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
-@property (readonly) void *gdkWindow;
-@property (retain  ) OFString        *title;
-@property (assign  ) int              x;
-@property (assign  ) int              y;
-@property (assign  ) int              width;
-@property (assign  ) int              height;
-@property (assign  ) OMWindowGeometry geometry;
-@property (assign  ) OMWindowEvent    eventMask;
-@property (readonly) OMWindowType     type;
-@property (assign  ) OMWindowStyle    style;
-@property (assign  ) OMWindowState    state;
-@property (assign  ) void            *nativeParent;
-@property (assign  ) float            opacity;
-@property (assign  ) BOOL             isVisible;
-@property (readonly) BOOL             isDestroyed;
-@property (assign  ) BOOL             isComposited;
-//@property (retain  ) OMCursor        *cursor;
+@property (readonly) void                        *gdkWindow;
+@property (retain  ) OFString                    *title;
+@property (retain  ) OFObject <OMWindowDelegate> *delegate;
+@property (assign  ) BOOL                         quitOnClose;
+@property (assign  ) int                          x;
+@property (assign  ) int                          y;
+@property (assign  ) int                          width;
+@property (assign  ) int                          height;
+@property (assign  ) OMWindowGeometry             geometry;
+@property (assign  ) OMWindowEvent                eventMask;
+@property (readonly) OMWindowType                 type;
+@property (assign  ) OMWindowStyle                style;
+@property (assign  ) OMWindowState                state;
+@property (assign  ) void                        *nativeParent;
+@property (assign  ) float                        opacity;
+@property (assign  ) BOOL                         isVisible;
+@property (readonly) BOOL                         isDestroyed;
+@property (assign  ) BOOL                         isComposited;
+//@property (retain  ) OMCursor                    *cursor;
 
 //----------------------------------------------------------------------------------------------------------------------------------
 + (OMWindow *)nativeToWrapper:(void *)gdkWindow;
@@ -226,7 +240,6 @@ typedef struct
 -(void)forceRefresh;
 //----------------------------------------------------------------------------------------------------------------------------------
 -(void)translateEvent:(void *)gdkEvent withData:(void *)gdkData;
--(void *)dispatchEvent:(OMEventType)event withData:(void *)data;
 
 @end
 

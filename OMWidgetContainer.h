@@ -19,14 +19,21 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 ==================================================================================================================================*/
 #import <ObjFW/ObjFW.h>
 #import <atropine/OMRectangle.h>
-@class OMWidget;
 @class OMSurface;
+@class OMWidget;
 
 //==================================================================================================================================
 @protocol OMWidgetContainer <OFObject>
 //----------------------------------------------------------------------------------------------------------------------------------
 -(OFArray *)children;
-//childAdd/childRemove/...
+-(int)appendChild:(OMWidget *)child;
+-(int)insertChild:(OMWidget *)child atIndex:(int)index;
+-(void)removeChild:(OMWidget *)child;
+-(OMWidget *)removeChildAtIndex:(int)index;
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-(OMWidget *)childWithKeyboardFocus;
+-(void)setChildWithKeyboardFocus:(OMWidget *)widget;
+-(OMWidget *)childWithPointerFocus;
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -(void)invalidate;
 -(void)invalidateDimension:(OMDimension)dimension;
@@ -34,8 +41,6 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 -(void)drawDimension:(OMDimension)dimension toSurface:(OMSurface *)surface;
 -(void)drawBackgroundDimension:(OMDimension)dimension toSurface:(OMSurface *)surface;
 -(void)drawChildrenDimension:(OMDimension)dimension toSurface:(OMSurface *)surface;
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--(void *)handleEvent:(OMEventType)type withData:(void *)data;
 //----------------------------------------------------------------------------------------------------------------------------------
 @end
 

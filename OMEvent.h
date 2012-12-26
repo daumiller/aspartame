@@ -27,48 +27,75 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 //==================================================================================================================================
 typedef enum
 {
-  OMEVENT_NOTHING                 = - 1, // 
-  OMEVENT_DELETE                  =   0, // top-level window close request
-  OMEVENT_DESTROY                 =   1, // cleaned-up
-  OMEVENT_EXPOSE                  =   2, // invalidated
-  OMEVENT_POINTER_MOTION          =   3, // mouse moved
-  OMEVENT_POINTER_BUTTON_PRESS    =   4, // click
-  OMEVENT_POINTER_BUTTON_PRESS_X2 =   5, // double click (in addition to two BUTTON_PRESS messages)
-  OMEVENT_POINTER_BUTTON_PRESS_X3 =   6, // triple click
-  OMEVENT_POINTER_BUTTON_RELEASE  =   7, // 
-  OMEVENT_KEY_PRESS               =   8, // 
-  OMEVENT_KEY_RELEASE             =   9, // 
-  OMEVENT_POINTER_ENTER           =  10, // 
-  OMEVENT_POINTER_LEAVE           =  11, // 
-  OMEVENT_FOCUS_CHANGE            =  12, // 
-  OMEVENT_CONFIGURE               =  13, // size, position, or z-order change
-  OMEVENT_MAP                     =  14, // "mapped"/shown/resouces allocated
-  OMEVENT_UNMAP                   =  15, // "unmapped"/hidden
-  OMEVENT_PROPERTY_CHANGE         =  16, // 
-  OMEVENT_SELECTION_CLEAR         =  17, // ?
-  OMEVENT_SELECTION_REQUEST       =  18, // ?
-  OMEVENT_SELECTION_NOTIFY        =  19, // ?
-  OMEVENT_PROXIMITY_IN            =  20, // touch/tablet/... contact began
-  OMEVENT_PROXIMITY_OUT           =  21, // touch/tablet/... contact lost
-  OMEVENT_DRAG_ENTER              =  22, // 
-  OMEVENT_DRAG_LEAVE              =  23, // 
-  OMEVENT_DRAG_MOTION             =  24, // 
-  OMEVENT_DRAG_STATUS             =  25, // 
-  OMEVENT_DROP_START              =  26, // 
-  OMEVENT_DROP_FINISHED           =  27, // 
-  OMEVENT_CLIENT_EVENT            =  28, // event from another application (huh?)
-  OMEVENT_VISIBILITY_CHANGE       =  29, // 
-  //OMVENT_                       =  30,
-  OMEVENT_SCROLL                  =  31, // 
-  OMEVENT_STATE_CHANGE            =  32, // state changed
-  OMEVENT_SETTING                 =  33, // 
-  OMEVENT_OWNER_CHANGE            =  34, // window content has changed (huh?)
-  OMEVENT_GRAB_BROKEN             =  35, // 
-  OMEVENT_DAMAGE                  =  36, // 
-  OMEVENT_TOUCH_BEGIN             =  37, // 
-  OMEVENT_TOUCH_UPDATE            =  38, // 
-  OMEVENT_TOUCH_END               =  39, // 
-  OMEVENT_TOUCH_CANCEL            =  40  // 
+  OMWINDOWEVENT_NOTHING                 = - 1, // 
+  OMWINDOWEVENT_DELETE                  =   0, // top-level window close request
+  OMWINDOWEVENT_DESTROY                 =   1, // cleaned-up
+  OMWINDOWEVENT_EXPOSE                  =   2, // invalidated
+  OMWINDOWEVENT_POINTER_MOTION          =   3, // mouse moved
+  OMWINDOWEVENT_POINTER_BUTTON_PRESS    =   4, // click
+  OMWINDOWEVENT_POINTER_BUTTON_PRESS_X2 =   5, // double click (in addition to two BUTTON_PRESS messages)
+  OMWINDOWEVENT_POINTER_BUTTON_PRESS_X3 =   6, // triple click
+  OMWINDOWEVENT_POINTER_BUTTON_RELEASE  =   7, // 
+  OMWINDOWEVENT_KEY_PRESS               =   8, // 
+  OMWINDOWEVENT_KEY_RELEASE             =   9, // 
+  OMWINDOWEVENT_POINTER_ENTER           =  10, // 
+  OMWINDOWEVENT_POINTER_LEAVE           =  11, // 
+  OMWINDOWEVENT_FOCUS_CHANGE            =  12, // 
+  OMWINDOWEVENT_CONFIGURE               =  13, // size, position, or z-order change
+  OMWINDOWEVENT_MAP                     =  14, // "mapped"/shown/resouces allocated
+  OMWINDOWEVENT_UNMAP                   =  15, // "unmapped"/hidden
+  OMWINDOWEVENT_PROPERTY_CHANGE         =  16, // 
+  OMWINDOWEVENT_SELECTION_CLEAR         =  17, // ?
+  OMWINDOWEVENT_SELECTION_REQUEST       =  18, // ?
+  OMWINDOWEVENT_SELECTION_NOTIFY        =  19, // ?
+  OMWINDOWEVENT_PROXIMITY_IN            =  20, // touch/tablet/... contact began
+  OMWINDOWEVENT_PROXIMITY_OUT           =  21, // touch/tablet/... contact lost
+  OMWINDOWEVENT_DRAG_ENTER              =  22, // 
+  OMWINDOWEVENT_DRAG_LEAVE              =  23, // 
+  OMWINDOWEVENT_DRAG_MOTION             =  24, // 
+  OMWINDOWEVENT_DRAG_STATUS             =  25, // 
+  OMWINDOWEVENT_DROP_START              =  26, // 
+  OMWINDOWEVENT_DROP_FINISHED           =  27, // 
+  OMWINDOWEVENT_CLIENT_EVENT            =  28, // event from another application (huh?)
+  OMWINDOWEVENT_VISIBILITY_CHANGE       =  29, // 
+  //OMWINDOWEVENT_                        =  30, // 
+  OMWINDOWEVENT_SCROLL                  =  31, // 
+  OMWINDOWEVENT_STATE_CHANGE            =  32, // state changed
+  OMWINDOWEVENT_SETTING                 =  33, // 
+  OMWINDOWEVENT_OWNER_CHANGE            =  34, // window content has changed (huh?)
+  OMWINDOWEVENT_GRAB_BROKEN             =  35, // 
+  OMWINDOWEVENT_DAMAGE                  =  36, // 
+  OMWINDOWEVENT_TOUCH_BEGIN             =  37, // 
+  OMWINDOWEVENT_TOUCH_UPDATE            =  38, // 
+  OMWINDOWEVENT_TOUCH_END               =  39, // 
+  OMWINDOWEVENT_TOUCH_CANCEL            =  40, // 
+  OMWINDOWEVENT_LAST
+} OMWindowEventType;
+//----------------------------------------------------------------------------------------------------------------------------------
+typedef enum
+{
+  OMEVENT_POINTER_MOVE,    // pointer moved over widget
+  OMEVENT_POINTER_ENTER,   // pointer entered widget dimension
+  OMEVENT_POINTER_LEAVE,   // pointer exited widget dimension
+  OMEVENT_BUTTON_PRESS,    // pointer button depressed
+  OMEVENT_BUTTON_PRESS_X2, // pointer button depressed within double-click threshold
+  OMEVENT_BUTTON_PRESS_X3, // pointer button depressed within triple-click threshold
+  OMEVENT_BUTTON_RELEASE,  // pointer button released
+  OMEVENT_SCROLL,          // pointer/other scrolling
+  OMEVENT_KEY_PRESS,       // keyboard key depressed
+  OMEVENT_KEY_RELEASE,     // keyboard key released
+  OMEVENT_FOCUS_GOT,       // active/keyboard focus moved to widget
+  OMEVENT_FOCUS_LOST,      // active/keyboard focus removed from widget
+  OMEVENT_FOCUS_NEXT,      // move active/keyboard focus to next child control <OMWidgetContainer>
+  OMEVENT_FOCUS_PREV,      // move active/keyboard focus to previous child control <OMWidgetContainer>
+  OMEVENT_DRAGDROP_ENTER,  // pointer entered widget while performing drag-and-drop
+  OMEVENT_DRAGDROP_LEAVE,  // pointer exited widget while performing drag-and-drop
+  OMEVENT_DRAGDROP_MOVE,   // pointer moved over widget while performing drag-and-drop
+  OMEVENT_DRAGDROP_DROP,   // drag-and-drop completed/dropped over widget
+  OMEVENT_TOUCH_BEGIN,     // touch event began on widget
+  OMEVENT_TOUCH_UPDATE,    // touch event update/status-change over widget
+  OMEVENT_TOUCH_END,       // touch event completed over widget
+  OMEVENT_TOUCH_CANCEL     // touch event cancelled
 } OMEventType;
 //----------------------------------------------------------------------------------------------------------------------------------
 typedef enum
@@ -160,7 +187,7 @@ typedef struct
 typedef struct
 {
   OMSurface  *surface;
-  OMDimension area;
+  OMDimension dimension;
   int         backlog;
 } OMEventExpose;
 //----------------------------------------------------------------------------------------------------------------------------------

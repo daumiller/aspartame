@@ -25,6 +25,21 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 #define NATIVE_WINDOW ((GdkWindow *)_gdkWindow)
 
 //==================================================================================================================================
+// Translation Helpers
+//==================================================================================================================================
+OMEventKey        translateEvent_key       (GdkEvent *e);
+OMEventButton     translateEvent_button    (GdkEvent *e);
+OMEventTouch      translateEvent_touch     (GdkEvent *e);
+OMEventScroll     translateEvent_scroll    (GdkEvent *e);
+OMEventPointer    translateEvent_pointer   (GdkEvent *e);
+OMEventExpose     translateEvent_expose    (GdkEvent *e);
+OMEventEnterLeave translateEvent_enterLeave(GdkEvent *e);
+OMEventState      translateEvent_state     (GdkEvent *e);
+OMEventSelection  translateEvent_selection (GdkEvent *e);
+OMEventDragDrop   translateEvent_dragDrop  (GdkEvent *e);
+//----------------------------------------------------------------------------------------------------------------------------------
+
+//==================================================================================================================================
 @implementation OMWindow
 
 //==================================================================================================================================
@@ -124,6 +139,7 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
   gdk_window_destroy(NATIVE_WINDOW);
   [_children release];
   [_title release];
+  [_delegate release];
   [super dealloc];
 }
 
@@ -134,6 +150,12 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 //----------------------------------------------------------------------------------------------------------------------------------
 -(OFString *)title { return _title; }
 -(void)setTitle:(OFString *)title { [_title release]; _title = [title retain]; }
+//----------------------------------------------------------------------------------------------------------------------------------
+-(OFObject <OMWindowDelegate> *)delegate { return _delegate; }
+-(void)setDelegate:(OFObject <OMWindowDelegate> *)delegate { [_delegate release]; _delegate = [delegate retain]; }
+//----------------------------------------------------------------------------------------------------------------------------------
+-(BOOL)quitOnClose { return _quitOnClose; }
+-(void)setQuitOnClose:(BOOL)quitOnClose { _quitOnClose = quitOnClose; }
 //----------------------------------------------------------------------------------------------------------------------------------
 -(int)x      { int x; gdk_window_get_geometry(NATIVE_WINDOW, &x, NULL, NULL, NULL); return x; }
 -(void)setX:(int)x { [self moveX:x Y:self.y]; }
@@ -357,28 +379,353 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 }
 
 //==================================================================================================================================
+// Window Event Handling/Translation
+//==================================================================================================================================
+-(void)translateEvent:(OMEventType)type withData:(void *)data
+{
+  // * Disposable Events *
+  // we don't want them (but subclasses are free to process)
+  if((int)type >= OMWINDOWEVENT_LAST) return;
+  switch(type)
+  {
+    case OMWINDOWEVENT_NOTHING:
+    case OMWINDOWEVENT_CONFIGURE:
+    case OMWINDOWEVENT_MAP:
+    case OMWINDOWEVENT_UNMAP:
+    case OMWINDOWEVENT_PROPERTY_CHANGE:
+    case OMWINDOWEVENT_SELECTION_CLEAR:
+    case OMWINDOWEVENT_SELECTION_REQUEST:
+    case OMWINDOWEVENT_SELECTION_NOTIFY:
+    case OMWINDOWEVENT_PROXIMITY_IN:
+    case OMWINDOWEVENT_PROXIMITY_OUT:
+    case OMWINDOWEVENT_CLIENT_EVENT:
+    case OMWINDOWEVENT_VISIBILITY_CHANGE:
+    case OMWINDOWEVENT_STATE_CHANGE:
+    case OMWINDOWEVENT_SETTING:
+    case OMWINDOWEVENT_OWNER_CHANGE:
+    case OMWINDOWEVENT_GRAB_BROKEN:
+    case OMWINDOWEVENT_DAMAGE:
+      return;
+    default: break;
+  }
+
+  // * Window Consumed Events *
+  // we can handle & return from these without worrying about children
+  if(type == OMWINDOWEVENT_DELETE)
+  {
+    if([_delegate respondsToSelector:@selector(windowShouldClose:)])
+      if(![_delegate windowShouldClose:self])
+        return;
+    if(_quitOnClose) [OMApplication quit];
+    [self destroyNativeWindow];
+    return;
+  }
+
+  if(type == OMWINDOWEVENT_DESTROY)
+  {
+    if([_delegate respondsToSelector:@selector(windowWillClose:)])
+        [_delegate windowWillClose:self];
+    return;
+  }
+
+  // * Window Method Handled Events *
+  // we may call on children, but that's all handled by other methods
+  if(type == OMWINDOWEVENT_EXPOSE)
+  {
+    [OMEventExpose *expose = (OMEventExpose *)data;
+    [self drawDimension:expose->dimension toSurface:expose->surface];
+    return;
+  }
+
+  // * Keyboard Events *
+  // pass to child with current keyboard focus, check for window keys if not consumed by child (TAB/SHIFT+TAB/...)
+  if(type == OMWINDOWEVENT_KEYPRESS)
+
+  // * Touch Events *
+  // pass to absolutely specified child
+
+  // * Pre-process Pointer Events *
+  // determine current Pointer focus, create synthetic events
+
+  // * Pointer Events *
+  // pass to child with cursor focus
+
+  // * we shouldn't reach this point... *
+  return NULL;
+}
+
+//==================================================================================================================================
+// aspartame/Widget Event Handling
+//==================================================================================================================================
+-(void *)handleEvent:(OMEventType)event withData:(void *)data
+{
+
+}
+
+//==================================================================================================================================
 // Event Translation
 //==================================================================================================================================
 -(void)translateEvent:(void *)gdkEvent withData:(void *)gdkData
 {
-  //move over all the OMApplication translation code to it's (proper) home here
-  //pass everything on to handleEvent (overridable, callable as default, ...)
+  OMEventType eventType = (OMEventType)(eAny->type);
+
+  void *eventData;
+  switch(eventType)
+  {
+    case OMEVENT_EXPOSE:
+    {
+      OMEventExpose expose = translateEvent_expose(e);
+      expose.surface = [[OMNativeSurface alloc] initWithData:eAny->window width:window.width height:window.height];
+      [window eventHandler:eventType data:&expose];
+      [expose.surface release];
+    }
+    break;
+
+    case OMEVENT_KEY_PRESS:
+    case OMEVENT_KEY_RELEASE:
+    {
+      OMEventKey key = translateEvent_key(e);
+      [window eventHandler:eventType data:&key];
+    }
+    break;
+
+    case OMEVENT_POINTER_BUTTON_PRESS:
+    case OMEVENT_POINTER_BUTTON_PRESS_X2:
+    case OMEVENT_POINTER_BUTTON_PRESS_X3:
+    case OMEVENT_POINTER_BUTTON_RELEASE:
+    {
+      OMEventButton button = translateEvent_button(e);
+      [window eventHandler:eventType data:&button];
+    }
+    break;
+
+    case OMEVENT_TOUCH_BEGIN:
+    case OMEVENT_TOUCH_UPDATE:
+    case OMEVENT_TOUCH_END:
+    case OMEVENT_TOUCH_CANCEL:
+    {
+      OMEventTouch touch = translateEvent_touch(e);
+      [window eventHandler:eventType data:&touch];
+    }
+
+    case OMEVENT_POINTER_MOTION:
+    {
+      OMEventPointer pointer = translateEvent_pointer(e);
+      [window eventHandler:eventType data:&pointer];
+    }
+    break;
+
+    case OMEVENT_POINTER_ENTER:
+    case OMEVENT_POINTER_LEAVE:
+    {
+      OMEventEnterLeave enterLeave = translateEvent_enterLeave(e);
+      [window eventHandler:eventType data:&enterLeave];
+    }
+    break;
+
+    case OMEVENT_FOCUS_CHANGE:
+    {
+      GdkEventFocus *gdk = (GdkEventFocus *)e;
+      BOOL gotFocus = (BOOL)gdk->in;
+      [window eventHandler:eventType data:&gotFocus];
+    }
+    break;
+
+    case OMEVENT_CONFIGURE:
+    {
+      GdkEventConfigure *gdk = (GdkEventConfigure *)e;
+      OMRectangle rectangle = OMMakeRectangleFloats((float)gdk->x, (float)gdk->y, (float)gdk->width, (float)gdk->height);
+      [window eventHandler:eventType data:&rectangle];
+    }
+    break;
+
+    case OMEVENT_SCROLL:
+    {
+      OMEventScroll scroll = translateEvent_scroll(e);
+      [window eventHandler:eventType data:&scroll];
+    }
+    break;
+
+    case OMEVENT_STATE_CHANGE:
+    {
+      OMEventState state = translateEvent_state(e);
+      [window eventHandler:eventType data:&state];
+    }
+    break;
+
+    case OMEVENT_SELECTION_CLEAR:
+    case OMEVENT_SELECTION_REQUEST:
+    case OMEVENT_SELECTION_NOTIFY:
+    {
+      OMEventSelection selection = translateEvent_selection(e);
+      [window eventHandler:eventType data:&selection];
+    }
+    break;
+ 
+    case OMEVENT_DRAG_ENTER:
+    case OMEVENT_DRAG_LEAVE:
+    case OMEVENT_DRAG_MOTION:
+    case OMEVENT_DRAG_STATUS:
+    case OMEVENT_DROP_START:
+    case OMEVENT_DROP_FINISHED:
+    {
+      OMEventDragDrop dragDrop = translateEvent_dragDrop(e);
+      [window eventHandler:eventType data:&dragDrop];
+    }
+    break;
+
+    case OMEVENT_PROXIMITY_IN:
+    case OMEVENT_PROXIMITY_OUT:
+    case OMEVENT_CLIENT_EVENT:
+    case OMEVENT_OWNER_CHANGE:
+    case OMEVENT_GRAB_BROKEN:
+    case OMEVENT_DAMAGE:
+    case OMEVENT_NOTHING:
+    case OMEVENT_DELETE:
+    case OMEVENT_DESTROY:
+    case OMEVENT_SETTING:
+    case OMEVENT_MAP:
+    case OMEVENT_UNMAP:
+    case OMEVENT_VISIBILITY_CHANGE:
+    case OMEVENT_PROPERTY_CHANGE:
+      [window eventHandler:eventType data:NULL];
+    break;
+  }
 }
 
 //==================================================================================================================================
-// Event Dispatch
+// Translation Helpers
 //==================================================================================================================================
--(void *)dispatchEvent:(OMEventType)event withData:(void *)data;
+OMEventKey translateEvent_key(GdkEvent *e)
 {
-  //distribute events to children
+  GdkEventKey *gdk = (GdkEventKey *)e;
+  OMEventKey om;
+  om.timestamp  = gdk->time;
+  om.modifiers  = gdk->state;
+  om.keycode    = gdk->keyval;
+  om.keycodeRaw = gdk->hardware_keycode;
+  om.isModifier = (BOOL)(gdk->is_modifier);
+  return om;
 }
-
-//==================================================================================================================================
-// Event Handler <WidgetContainer>
-//==================================================================================================================================
--(void *)handleEvent:(OMEventType)type withData:(void *)data
+//----------------------------------------------------------------------------------------------------------------------------------
+OMEventButton translateEvent_button(GdkEvent *e)
 {
-  //decide what to process and what to delegate
+  GdkEventButton *gdk = (GdkEventButton *)e;
+  OMEventButton om;
+  om.timestamp = gdk->time;
+  om.x         = (float)gdk->x;
+  om.y         = (float)gdk->y;
+  om.rootX     = (float)gdk->x_root;
+  om.rootY     = (float)gdk->y_root;
+  om.modifiers = gdk->state;
+  om.button    = gdk->button;
+  //om.device    = [OMDeviceManager nativeDeviceCache:gdk->device];
+  return om;
+}
+//----------------------------------------------------------------------------------------------------------------------------------
+OMEventTouch translateEvent_touch(GdkEvent *e)
+{
+  GdkEventTouch *gdk = (GdkEventTouch *)e;
+  OMEventTouch om;
+  om.timestamp  = gdk->time;
+  om.x          = (float)gdk->x;
+  om.y          = (float)gdk->y;
+  om.rootX      = (float)gdk->x_root;
+  om.rootY      = (float)gdk->y_root;
+  om.modifiers  = gdk->state;
+  om.isPointer  = gdk->emulating_pointer;
+  om.sequenceId = gdk->sequence;
+  //om.device    = [OMDeviceManager nativeDeviceCache:gdk->device];
+  return om;
+}
+//----------------------------------------------------------------------------------------------------------------------------------
+OMEventScroll translateEvent_scroll(GdkEvent *e)
+{
+  GdkEventScroll *gdk = (GdkEventScroll *)e;
+  OMEventScroll om;
+  om.timestamp  = gdk->time;
+  om.modifiers  = gdk->state;
+  om.direction  = (OMScrollDirection)gdk->direction;
+  om.x          = (float)gdk->x;
+  om.y          = (float)gdk->y;
+  om.rootX      = (float)gdk->x_root;
+  om.rootY      = (float)gdk->y_root;
+  om.deltaX     = (float)gdk->delta_x;
+  om.deltaY     = (float)gdk->delta_y;
+  //om.device    = [OMDeviceManager nativeDeviceCache:gdk->device];
+  return om;
+}
+//----------------------------------------------------------------------------------------------------------------------------------
+OMEventPointer translateEvent_pointer(GdkEvent *e)
+{
+  GdkEventMotion *gdk = (GdkEventMotion *)e;
+  OMEventPointer om;
+  om.timestamp = gdk->time;
+  om.modifiers = gdk->state;
+  om.x         = (float)gdk->x;
+  om.y         = (float)gdk->y;
+  om.rootX     = (float)gdk->x_root;
+  om.rootY     = (float)gdk->y_root;
+  om.isFeed    = gdk->is_hint;
+  //om.device    = [OMDeviceManager nativeDeviceCache:gdk->device];
+  return om;
+}
+//----------------------------------------------------------------------------------------------------------------------------------
+OMEventExpose translateEvent_expose(GdkEvent *e)
+{
+  GdkEventExpose *gdk = (GdkEventExpose *)e;
+  OMEventExpose om;
+  om.surface   = nil;
+  om.dimension = OMMakeDimensionFloats((float)gdk->area.x, (float)gdk->area.y, (float)gdk->area.width, (float)gdk->area.height);
+  om.backlog   = gdk->count;
+  return om;
+}
+//----------------------------------------------------------------------------------------------------------------------------------
+OMEventEnterLeave translateEvent_enterLeave(GdkEvent *e)
+{
+  GdkEventCrossing *gdk = (GdkEventCrossing *)e;
+  OMEventEnterLeave om;
+  om.timestamp = gdk->time;
+  om.modifiers = gdk->state;
+  om.otherNative = gdk->subwindow;
+  om.other       = (om.otherNative == NULL) ? nil : [OMWindow nativeToWrapper:om.otherNative];
+  om.x           = (float)gdk->x;
+  om.y           = (float)gdk->y;
+  om.rootX       = (float)gdk->x_root;
+  om.rootY       = (float)gdk->y_root;
+  return om;
+}
+//----------------------------------------------------------------------------------------------------------------------------------
+OMEventState translateEvent_state(GdkEvent *e)
+{
+  GdkEventWindowState *gdk = (GdkEventWindowState *)e;
+  OMEventState om;
+  om.changeMask = gdk->changed_mask;
+  om.newState   = gdk->new_window_state;
+  return om;
+}
+//----------------------------------------------------------------------------------------------------------------------------------
+OMEventSelection translateEvent_selection(GdkEvent *e)
+{
+  GdkEventSelection *gdk = (GdkEventSelection *)e;
+  OMEventSelection om;
+  om.timestamp = gdk->time;
+  om.requestor = gdk->requestor;
+  om.selection = gdk->selection;
+  om.target    = gdk->target;
+  om.property  = gdk->property;
+  return om;
+}
+//----------------------------------------------------------------------------------------------------------------------------------
+OMEventDragDrop translateEvent_dragDrop(GdkEvent *e)
+{
+  GdkEventDND *gdk = (GdkEventDND *)e;
+  OMEventDragDrop om;
+  om.timestamp = gdk->time;
+  om.rootX     = (float)gdk->x_root;
+  om.rootY     = (float)gdk->y_root;
+  //om.context   = [OMDragDrop dragDropWithNativeDND:gdk->context];
+  return om;
 }
 
 //==================================================================================================================================
