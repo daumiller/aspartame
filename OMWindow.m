@@ -373,16 +373,19 @@ OMEventDragDrop   translateEvent_dragDrop  (GdkEvent *e);
 {
   for(OMWidget *child in _children)
   {
-    OMDimension updateUnion = OMDimensionUnite(dimension, child.dimension);
-    if((updateUnion.size.width > 0.0f) || (updateUnion.size.height > 0.0f))
-      [child drawDimension:updateUnion toSurface:surface];
+    OMDimension intersection = OMDimensionIntersect(dimension, child.dimension);
+    if((intersection.size.width > 0.0f) || (intersection.size.height > 0.0f))
+      [child drawDimension:intersection toSurface:surface];
 }
 
 //==================================================================================================================================
-// Window Event Handling/Translation
+// GDK Window Event Handler
 //==================================================================================================================================
--(void)translateEvent:(OMEventType)type withData:(void *)data
+-(void)translateEvent:(void *)gdkEvent withData:(void *)gdkData
 {
+  GdkEventAny *gdkEventAny = (GdkEventAny *)gdkEvent;
+  OMWindowEvent type = (OMWindowEvent)(gdkEventAny->type);
+
   // * Disposable Events *
   // we don't want them (but subclasses are free to process)
   if((int)type >= OMWINDOWEVENT_LAST) return;
@@ -432,14 +435,39 @@ OMEventDragDrop   translateEvent_dragDrop  (GdkEvent *e);
   // we may call on children, but that's all handled by other methods
   if(type == OMWINDOWEVENT_EXPOSE)
   {
-    [OMEventExpose *expose = (OMEventExpose *)data;
-    [self drawDimension:expose->dimension toSurface:expose->surface];
+    GdkEventExpose *gee   = (GdkEventExpose *)gdkEvent;
+    OMDimension dimension = OMMakeDimensionFloats((float)gee->area.x, (float)gee->area.y, (float)gee->area.width, (float)gee->area.height);
+    OMSurface  *surface   = [[OMNativeSurface alloc] initWithData:eAny->window width:self.width height:self.height];
+    [self drawDimension:dimension toSurface:surface];
+    [surface release];
     return;
   }
 
   // * Keyboard Events *
   // pass to child with current keyboard focus, check for window keys if not consumed by child (TAB/SHIFT+TAB/...)
-  if(type == OMWINDOWEVENT_KEYPRESS)
+  if(_childWithKeyboardFocus)
+  {
+    if(type == OMWINDOWEVENT_KEY_PRESS)
+    {
+      GdkEventKey *gek = (GdkEventKey *)e;
+      [_childWithKeyboardFocus onKeyPress: gek->keyval
+                                modifiers: (OMEventModifier)gek->state
+                               isModifier: (BOOL)gek->is_modifier
+                                timestamp: gek->time
+                                  rawCode: gek->hardware_keycode];
+      return;
+    }
+    if(type == OMWINDOWEVENT_KEY_RELEASE)
+    {
+      GdkEventKey *gek = (GdkEventKey *)e;
+      [_childWithKeyboardFocus onKeyRelease: gek->keyval
+                                  modifiers: (OMEventModifier)gek->state
+                                 isModifier: (BOOL)gek->is_modifier
+                                  timestamp: gek->time
+                                    rawCode: gek->hardware_keycode];
+      return;
+    }
+  }
 
   // * Touch Events *
   // pass to absolutely specified child
@@ -455,32 +483,16 @@ OMEventDragDrop   translateEvent_dragDrop  (GdkEvent *e);
 }
 
 //==================================================================================================================================
-// aspartame/Widget Event Handling
+// aspartame Widget Event Handler
 //==================================================================================================================================
 -(void *)handleEvent:(OMEventType)event withData:(void *)data
 {
-
+  return NULL;
 }
 
 //==================================================================================================================================
-// Event Translation
+// GDK->aspartame event translation helpers
 //==================================================================================================================================
--(void)translateEvent:(void *)gdkEvent withData:(void *)gdkData
-{
-  OMEventType eventType = (OMEventType)(eAny->type);
-
-  void *eventData;
-  switch(eventType)
-  {
-    case OMEVENT_EXPOSE:
-    {
-      OMEventExpose expose = translateEvent_expose(e);
-      expose.surface = [[OMNativeSurface alloc] initWithData:eAny->window width:window.width height:window.height];
-      [window eventHandler:eventType data:&expose];
-      [expose.surface release];
-    }
-    break;
-
     case OMEVENT_KEY_PRESS:
     case OMEVENT_KEY_RELEASE:
     {
