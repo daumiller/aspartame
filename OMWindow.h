@@ -169,6 +169,8 @@ typedef struct
   OFArray                     *_children;
   OFObject <OMWindowDelegate> *_delegate;
   BOOL                         _quitOnClose;
+  OMWidget                    *_childWithKeyboardFocus;
+  OFMutableArray              *_children;
 }
 //----------------------------------------------------------------------------------------------------------------------------------
 @property (readonly) void                        *gdkWindow;

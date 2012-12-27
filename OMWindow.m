@@ -25,21 +25,6 @@ along with aspartame.  If not, see <http://www.gnu.org/licenses/>.
 #define NATIVE_WINDOW ((GdkWindow *)_gdkWindow)
 
 //==================================================================================================================================
-// Translation Helpers
-//==================================================================================================================================
-OMEventKey        translateEvent_key       (GdkEvent *e);
-OMEventButton     translateEvent_button    (GdkEvent *e);
-OMEventTouch      translateEvent_touch     (GdkEvent *e);
-OMEventScroll     translateEvent_scroll    (GdkEvent *e);
-OMEventPointer    translateEvent_pointer   (GdkEvent *e);
-OMEventExpose     translateEvent_expose    (GdkEvent *e);
-OMEventEnterLeave translateEvent_enterLeave(GdkEvent *e);
-OMEventState      translateEvent_state     (GdkEvent *e);
-OMEventSelection  translateEvent_selection (GdkEvent *e);
-OMEventDragDrop   translateEvent_dragDrop  (GdkEvent *e);
-//----------------------------------------------------------------------------------------------------------------------------------
-
-//==================================================================================================================================
 @implementation OMWindow
 
 //==================================================================================================================================
@@ -128,6 +113,7 @@ OMEventDragDrop   translateEvent_dragDrop  (GdkEvent *e);
   _geometry.heightBase = height;
   _geometry.flags     |= OMWINDOW_GEOMETRY_POSITION | OMWINDOW_GEOMETRY_SIZE_BASE;
   _opacity             = 1.0f;
+  _childWithKeyboardFocus = nil;
 
   g_object_set_data(_gdkWindow, ASPARTAME_NATIVE_LOOKUP_STRING, self);
 
@@ -336,6 +322,39 @@ OMEventDragDrop   translateEvent_dragDrop  (GdkEvent *e);
 // Children <WidgetContainer>
 //==================================================================================================================================
 -(OFArray *)children { return _children; }
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-(int)appendChild:(OMWidget *)child
+{
+  [_children addObject:child];
+  [self invalidate];
+  return (_children.count-1);
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-(int)insertChild:(OMWidget *)child atIndex:(int)index
+{
+  [_children insertObject:child atIndex:index];
+  [self invalidate];
+  return index;
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-(void)removeChild:(OMWidget *)child       { [_children removeObjectIdenticalTo:child]; [self invalidate]; }
+-(OMWidget *)removeChildAtIndex:(int)index { [_children removeObjectAtIndex:index];     [self invalidate]; }
+//----------------------------------------------------------------------------------------------------------------------------------
+-(OMWidget *)childWithKeyboardFocus { return _childWithKeyboardFocus; }
+-(void)setChildWithKeyboardFocus:(OMWidget *)widget
+{
+  OMWidget *oldFocus = _childWithKeyboardFocus;
+  _childWithKeyboardFocus = widget;
+
+  [oldFocus onLostFocus:widget];
+  [widget   onGotFocus:oldFocus];
+}
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-(OMWidget *)childWithPointerFocus
+{
+  return nil;
+}
+
 
 //==================================================================================================================================
 // Painting <WidgetContainer>
@@ -392,7 +411,6 @@ OMEventDragDrop   translateEvent_dragDrop  (GdkEvent *e);
   switch(type)
   {
     case OMWINDOWEVENT_NOTHING:
-    case OMWINDOWEVENT_CONFIGURE:
     case OMWINDOWEVENT_MAP:
     case OMWINDOWEVENT_UNMAP:
     case OMWINDOWEVENT_PROPERTY_CHANGE:
@@ -402,8 +420,6 @@ OMEventDragDrop   translateEvent_dragDrop  (GdkEvent *e);
     case OMWINDOWEVENT_PROXIMITY_IN:
     case OMWINDOWEVENT_PROXIMITY_OUT:
     case OMWINDOWEVENT_CLIENT_EVENT:
-    case OMWINDOWEVENT_VISIBILITY_CHANGE:
-    case OMWINDOWEVENT_STATE_CHANGE:
     case OMWINDOWEVENT_SETTING:
     case OMWINDOWEVENT_OWNER_CHANGE:
     case OMWINDOWEVENT_GRAB_BROKEN:
@@ -433,6 +449,23 @@ OMEventDragDrop   translateEvent_dragDrop  (GdkEvent *e);
 
   // * Window Method Handled Events *
   // we may call on children, but that's all handled by other methods
+  /*
+    case OMWINDOWEVENT_VISIBILITY_CHANGE:
+    
+    case OMEVENT_FOCUS_CHANGE:
+      GdkEventFocus *gdk = (GdkEventFocus *)e;
+      BOOL gotFocus = (BOOL)gdk->in;
+      [window eventHandler:eventType data:&gotFocus];
+
+    case OMEVENT_CONFIGURE:
+      GdkEventConfigure *gdk = (GdkEventConfigure *)e;
+      OMRectangle rectangle = OMMakeRectangleFloats((float)gdk->x, (float)gdk->y, (float)gdk->width, (float)gdk->height);
+      [window eventHandler:eventType data:&rectangle];
+
+    case OMEVENT_STATE_CHANGE:
+      OMEventState state = translateEvent_state(e);
+      [window eventHandler:eventType data:&state];
+  */
   if(type == OMWINDOWEVENT_EXPOSE)
   {
     GdkEventExpose *gee   = (GdkEventExpose *)gdkEvent;
@@ -477,30 +510,9 @@ OMEventDragDrop   translateEvent_dragDrop  (GdkEvent *e);
 
   // * Pointer Events *
   // pass to child with cursor focus
-
-  // * we shouldn't reach this point... *
-  return NULL;
 }
 
-//==================================================================================================================================
-// aspartame Widget Event Handler
-//==================================================================================================================================
--(void *)handleEvent:(OMEventType)event withData:(void *)data
-{
-  return NULL;
-}
-
-//==================================================================================================================================
-// GDK->aspartame event translation helpers
-//==================================================================================================================================
-    case OMEVENT_KEY_PRESS:
-    case OMEVENT_KEY_RELEASE:
-    {
-      OMEventKey key = translateEvent_key(e);
-      [window eventHandler:eventType data:&key];
-    }
-    break;
-
+/*
     case OMEVENT_POINTER_BUTTON_PRESS:
     case OMEVENT_POINTER_BUTTON_PRESS_X2:
     case OMEVENT_POINTER_BUTTON_PRESS_X3:
@@ -535,33 +547,10 @@ OMEventDragDrop   translateEvent_dragDrop  (GdkEvent *e);
     }
     break;
 
-    case OMEVENT_FOCUS_CHANGE:
-    {
-      GdkEventFocus *gdk = (GdkEventFocus *)e;
-      BOOL gotFocus = (BOOL)gdk->in;
-      [window eventHandler:eventType data:&gotFocus];
-    }
-    break;
-
-    case OMEVENT_CONFIGURE:
-    {
-      GdkEventConfigure *gdk = (GdkEventConfigure *)e;
-      OMRectangle rectangle = OMMakeRectangleFloats((float)gdk->x, (float)gdk->y, (float)gdk->width, (float)gdk->height);
-      [window eventHandler:eventType data:&rectangle];
-    }
-    break;
-
     case OMEVENT_SCROLL:
     {
       OMEventScroll scroll = translateEvent_scroll(e);
       [window eventHandler:eventType data:&scroll];
-    }
-    break;
-
-    case OMEVENT_STATE_CHANGE:
-    {
-      OMEventState state = translateEvent_state(e);
-      [window eventHandler:eventType data:&state];
     }
     break;
 
@@ -585,28 +574,13 @@ OMEventDragDrop   translateEvent_dragDrop  (GdkEvent *e);
       [window eventHandler:eventType data:&dragDrop];
     }
     break;
-
-    case OMEVENT_PROXIMITY_IN:
-    case OMEVENT_PROXIMITY_OUT:
-    case OMEVENT_CLIENT_EVENT:
-    case OMEVENT_OWNER_CHANGE:
-    case OMEVENT_GRAB_BROKEN:
-    case OMEVENT_DAMAGE:
-    case OMEVENT_NOTHING:
-    case OMEVENT_DELETE:
-    case OMEVENT_DESTROY:
-    case OMEVENT_SETTING:
-    case OMEVENT_MAP:
-    case OMEVENT_UNMAP:
-    case OMEVENT_VISIBILITY_CHANGE:
-    case OMEVENT_PROPERTY_CHANGE:
-      [window eventHandler:eventType data:NULL];
-    break;
   }
 }
+*/
 
+/*
 //==================================================================================================================================
-// Translation Helpers
+// Event Translation Helpers
 //==================================================================================================================================
 OMEventKey translateEvent_key(GdkEvent *e)
 {
@@ -739,6 +713,7 @@ OMEventDragDrop translateEvent_dragDrop(GdkEvent *e)
   //om.context   = [OMDragDrop dragDropWithNativeDND:gdk->context];
   return om;
 }
+*/
 
 //==================================================================================================================================
 @end
